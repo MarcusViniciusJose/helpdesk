@@ -1,6 +1,6 @@
 <?php
 
-class Tickets{
+class Ticket{
 
     private PDO $db;
     public function __construct(){
