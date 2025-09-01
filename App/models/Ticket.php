@@ -29,4 +29,25 @@ class Ticket{
         return $this->db->lastInsertId();
     }
 
+    public function getById($id){
+        $stmt = $this->db->prepare("SELECT t.*, u.name AS requester_name FROM tickets t JOIN users u ON u.id = t.requester_id WHERE t.id = :id");
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function updateStatus($id, $status){
+        $stmt = $this->db->prepare("UPDATE tickets SET status = :status, updated_at = NOW() WHERE id = :id");
+        $stmt->execute([':status' => $status, 
+        ':id' => $id
+        ]);
+    }
+
+    public function assignTo($id, $userId){
+        $stmt = $this->db->prepare("UPDATE tickets SET assigned_to = :uid, update_at = NOW() WHERE id = :id");
+        return $stmt->execute([
+            ':uid' => $userId,
+            ':id' => $id
+        ]);
+    }
+
 }
