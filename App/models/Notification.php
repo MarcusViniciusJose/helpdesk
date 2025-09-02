@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../../config/config.php';
 
-class Notifications{
+class Notification{
     private $db;
     public function __construct(){
         
