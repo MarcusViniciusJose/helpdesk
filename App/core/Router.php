@@ -1,6 +1,6 @@
 <?php
 
-class Router{
+class Router {
 
     public static function dispatch(){
         $url = $_GET['url'] ?? 'dashboard/index';
@@ -8,7 +8,7 @@ class Router{
         $controller = ucfirst($parts[0]) . 'Controller';
         $action = $parts[1] ?? 'index';
 
-        $file = __DIR__ . '/../controllers/' . $controller . '.php';
+        $file = __DIR__ . '/../controller/' . $controller . '.php';
         if(!file_exists($file)){
             http_response_code(404);
             die('Controller não encontrado');

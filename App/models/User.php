@@ -8,6 +8,11 @@ class User{
         $this->db = Database::conn();
     }
 
+    public function all(){
+        $sql = "SELECT id, name, email, role, status, created_at FROM users ORDER BY name ASC";
+        return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function findByEmail($email) {
         $st = $this->db->prepare("SELECT * FROM users WHERE email = ?");
         $st->execute([$email]);
@@ -18,4 +23,6 @@ class User{
         $st = $this->db->prepare("INSERT INTO user (name, email, password_hash, role) VALUES (?, ?, ?, ?)");
         return $st->execute([$name, $email, $passwordHash, $role]);
     }
+
+   
 }
