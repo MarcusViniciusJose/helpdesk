@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../core/Database.php';
 
-class User{
+class User {
 
     private PDO $db;
 
@@ -11,17 +11,20 @@ class User{
     }
 
     public function all(){
-        $sql = "SELECT id, name, email, role, status, created_at FROM users ORDER BY name ASC";
+        $sql = "SELECT id, name, email, role, status, created_at 
+                FROM users 
+                ORDER BY name ASC";
         return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function findByEmail($email) {
+    public function findByEmail(string $email): ?array {
         $st = $this->db->prepare("SELECT * FROM users WHERE email = ?");
         $st->execute([$email]);
-        return $st->fetch(PDO::FETCH_ASSOC);
+        $user = $st->fetch(PDO::FETCH_ASSOC);
+        return $user ?: null;
     }
 
-    public function create(array $data){
+    public function create(array $data): int {
         $sql = "INSERT INTO users (name, email, password_hash, role, status, created_at, updated_at)
                 VALUES (:name, :email, :password_hash, :role, :status, NOW(), NOW())";
         $stmt = $this->db->prepare($sql);
@@ -32,8 +35,6 @@ class User{
             ':role'          => $data['role'],
             ':status'        => $data['status'],
         ]);
-        return (int)$this->db ->lastInsertId();
+        return (int)$this->db->lastInsertId();
     }
-
-   
 }
