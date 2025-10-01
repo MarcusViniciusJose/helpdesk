@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . "/../core/Auth.php";
 require_once __DIR__ . "/../models/User.php";
 
 class UserController {
@@ -7,13 +8,11 @@ class UserController {
     private $userModel;
 
     public function __construct() {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        Auth::requireLogin();
         
-        $role = $_SESSION['user']['role'] ?? null;
+        $role = Auth::user()['role'] ?? null;
         if (!in_array($role, ['admin', 'ti'], true)) {
-            $_SESSION['error'] = 'Acesso negado';
+            $_SESSION['error'] = 'Você não tem permissão para acessar o gerenciamento de usuários';
             header('Location: ' . BASE_URL . '/?url=dashboard/index');
             exit;
         }
@@ -23,7 +22,6 @@ class UserController {
 
     public function index() {
         $users = $this->userModel->all();
-        
         require __DIR__ . '/../views/users/index.php';
     }
 
@@ -101,7 +99,7 @@ class UserController {
             return;
         }
 
-        $currentUser = $_SESSION['user'];
+        $currentUser = Auth::user();
         if ($user['role'] === 'admin' && $currentUser['role'] !== 'admin') {
             $_SESSION['error'] = 'Apenas administradores podem editar outros administradores';
             header('Location: ' . BASE_URL . '/?url=user/index');
@@ -189,7 +187,7 @@ class UserController {
             return;
         }
 
-        if ($id == $_SESSION['user']['id']) {
+        if ($id == Auth::user()['id']) {
             $_SESSION['error'] = 'Você não pode desativar sua própria conta';
             header('Location: ' . BASE_URL . '/?url=user/index');
             return;
@@ -240,13 +238,13 @@ class UserController {
             return;
         }
 
-        if ($id == $_SESSION['user']['id']) {
+        if ($id == Auth::user()['id']) {
             $_SESSION['error'] = 'Você não pode excluir sua própria conta';
             header('Location: ' . BASE_URL . '/?url=user/index');
             return;
         }
 
-        if ($_SESSION['user']['role'] !== 'admin') {
+        if (Auth::user()['role'] !== 'admin') {
             $_SESSION['error'] = 'Apenas administradores podem excluir usuários';
             header('Location: ' . BASE_URL . '/?url=user/index');
             return;

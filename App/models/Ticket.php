@@ -155,4 +155,82 @@ class Ticket {
                $ticket['requester_id'] == $user['id'] && 
                $ticket['status'] === 'open';
     }
+public function getManagementKPIs(): array {
+    $sql = "
+        SELECT 
+            -- Totais básicos
+            COUNT(*) as total_tickets,
+            COUNT(CASE WHEN status = 'open' THEN 1 END) as aguardando_atendimento,
+            COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as em_atendimento,
+            COUNT(CASE WHEN status = 'closed' THEN 1 END) as resolvidos,
+            
+            -- Prioridades críticas
+            COUNT(CASE WHEN priority IN ('critical', 'high') AND status != 'closed' THEN 1 END) as urgentes_abertos,
+            
+            -- Performance
+            COUNT(CASE WHEN status = 'closed' AND DATE(updated_at) = CURDATE() THEN 1 END) as resolvidos_hoje,
+            COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) as novos_hoje,
+            
+            -- Alertas
+            COUNT(CASE WHEN assigned_to IS NULL AND status = 'open' THEN 1 END) as sem_responsavel,
+            COUNT(CASE WHEN DATEDIFF(NOW(), created_at) > 3 AND status != 'closed' THEN 1 END) as atrasados
+        FROM tickets
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    ";
+    
+    $stmt = $this->db->query($sql);
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $data['taxa_resolucao'] = $data['total_tickets'] > 0 
+        ? round(($data['resolvidos'] / $data['total_tickets']) * 100, 1) 
+        : 0;
+    
+    $sqlTime = "
+        SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, updated_at)) as tempo_medio
+        FROM tickets
+        WHERE status = 'closed' 
+        AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    ";
+    $stmtTime = $this->db->query($sqlTime);
+    $timeData = $stmtTime->fetch(PDO::FETCH_ASSOC);
+    $data['tempo_medio_horas'] = $timeData['tempo_medio'] ? round($timeData['tempo_medio'], 1) : 0;
+    
+    return $data;
+}
+
+public function getTechPerformance(): array {
+    $sql = "
+        SELECT 
+            u.name as tecnico,
+            COUNT(t.id) as total_atribuidos,
+            COUNT(CASE WHEN t.status = 'closed' THEN 1 END) as concluidos,
+            COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END) as em_andamento,
+            COUNT(CASE WHEN t.status = 'open' THEN 1 END) as pendentes,
+            AVG(CASE 
+                WHEN t.status = 'closed' 
+                THEN TIMESTAMPDIFF(HOUR, t.created_at, t.updated_at) 
+            END) as tempo_medio_resolucao
+        FROM users u
+        LEFT JOIN tickets t ON t.assigned_to = u.id 
+            AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        WHERE u.role IN ('ti', 'admin')
+        GROUP BY u.id, u.name
+        HAVING total_atribuidos > 0
+        ORDER BY concluidos DESC
+    ";
+    
+    $stmt = $this->db->query($sql);
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    foreach ($data as &$tech) {
+        $tech['taxa_conclusao'] = $tech['total_atribuidos'] > 0 
+            ? round(($tech['concluidos'] / $tech['total_atribuidos']) * 100, 1) 
+            : 0;
+        $tech['tempo_medio_resolucao'] = $tech['tempo_medio_resolucao'] 
+            ? round($tech['tempo_medio_resolucao'], 1) 
+            : 0;
+    }
+    
+    return $data;
+}
 }

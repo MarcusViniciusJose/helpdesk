@@ -15,7 +15,17 @@ class DashboardController{
         Auth::requireLogin();
         
         $user = Auth::user();
+        $isAdminOrTI = in_array($user['role'], ['admin', 'ti']);
+        
         $stats = $this->ticketModel->getStatsByUser($user);
+        
+        $kpis = null;
+        $techPerformance = [];
+        
+        if ($isAdminOrTI) {
+            $kpis = $this->ticketModel->getManagementKPIs();
+            $techPerformance = $this->ticketModel->getTechPerformance();
+        }
         
         require_once __DIR__ . '/../views/dashboard/index.php';
     }

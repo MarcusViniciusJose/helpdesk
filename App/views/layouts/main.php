@@ -1,26 +1,181 @@
-<!doctype html>
-<html lang="pt-br">
+<?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+$currentUser = $_SESSION['user'] ?? null;
+$isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], true);
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <title>HelpDesk</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelpDesk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-header h4 {
+            color: #fff;
+            margin: 0;
+            font-weight: 600;
+        }
+        .sidebar-header small {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.875rem;
+        }
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.875rem 1.25rem;
+            margin: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+        .sidebar .nav-link i {
+            width: 24px;
+            font-size: 1.1rem;
+        }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(0,0,0,0.1);
+            margin-top: auto;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .nav-divider {
+            height: 1px;
+            background-color: rgba(255,255,255,0.1);
+            margin: 1rem 1.25rem;
+        }
+    </style>
 </head>
 <body>
-  <div class="d-flex">
-    <div class="bg-dark text-white p-3" style="width:250px; min-height:100vh;">
-      <h4 class="mb-4">HelpDesk</h4>
-      <ul class="nav flex-column">
-        <li class="nav-item"><a href="<?= BASE_URL ?>/?url=dashboard/index" class="nav-link text-white">Dashboard</a></li>
-        <li class="nav-item"><a href="<?= BASE_URL ?>/?url=ticket/index" class="nav-link text-white">Chamados</a></li>
-        <li class="nav-item"><a href="<?= BASE_URL ?>/?url=user/index" class="nav-link text-white">Usuários</a></li>
-        <li class="nav-item"><a href="<?= BASE_URL ?>/?url=auth/logout" class="nav-link text-white">Sair</a></li>
-      </ul>
+    <div class="container-fluid">
+        <div class="row">
+            
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar p-0">
+               
+                <div class="sidebar-header">
+                    <h4>
+                        <i class="bi bi-headset me-2"></i>HelpDesk
+                    </h4>
+                    <?php if ($currentUser): ?>
+                        <small>
+                            Olá, <?= htmlspecialchars(explode(' ', $currentUser['name'])[0]) ?>
+                        </small>
+                    <?php endif; ?>
+                </div>
+                
+                <div class="sidebar-content">
+                    <ul class="nav flex-column pt-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= BASE_URL ?>/?url=dashboard/index">
+                                <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= BASE_URL ?>/?url=ticket/index">
+                                <i class="bi bi-ticket-perforated me-2"></i>Chamados
+                            </a>
+                        </li>
+                        
+                        <?php if ($isAdminOrTI): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= BASE_URL ?>/?url=user/index">
+                                <i class="bi bi-people-fill me-2"></i>Usuários
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                    </ul>
+                    
+                    <div class="nav-divider"></div>
+                    
+                    <ul class="nav flex-column mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= BASE_URL ?>/?url=profile/index">
+                                <i class="bi bi-person-circle me-2"></i>Meu Perfil
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="<?= BASE_URL ?>/?url=auth/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <?php if ($currentUser): ?>
+                <div class="sidebar-footer">
+                    <small class="text-white-50 d-block">
+                        <i class="bi bi-shield-check me-1"></i>
+                        <?php
+                        $roleLabels = [
+                            'admin' => 'Administrador',
+                            'ti' => 'TI',
+                            'user' => 'Usuário'
+                        ];
+                        echo $roleLabels[$currentUser['role']] ?? $currentUser['role'];
+                        ?>
+                    </small>
+                </div>
+                <?php endif; ?>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-0 main-content">
+                <div class="p-4">
+                    <?= $content ?>
+                </div>
+            </main>
+        </div>
     </div>
 
-    <div class="p-4 flex-fill">
-      <?= $content ?>
-    </div>
-  </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.href;
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const linkHref = link.getAttribute('href');
+                if (linkHref && currentPath.includes(linkHref)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
