@@ -3,17 +3,17 @@
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/?url=user/index">Usuários</a></li>
-    <li class="breadcrumb-item active">Novo Usuário</li>
+    <li class="breadcrumb-item active">Editar Usuário</li>
   </ol>
 </nav>
 
 <h4 class="mb-4">
-  <i class="bi bi-person-plus me-2"></i>Novo Usuário
+  <i class="bi bi-pencil-square me-2"></i>Editar Usuário
 </h4>
 
 <?php if (!empty($errors)): ?>
   <div class="alert alert-danger alert-dismissible fade show">
-    <strong>Erro ao criar usuário:</strong>
+    <strong>Erro ao atualizar usuário:</strong>
     <ul class="mb-0 mt-2">
       <?php foreach ($errors as $error): ?>
         <li><?= htmlspecialchars($error) ?></li>
@@ -27,7 +27,9 @@
   <div class="col-lg-8">
     <div class="card shadow-sm">
       <div class="card-body">
-        <form method="post" action="<?= BASE_URL ?>/?url=user/store">
+        <form method="post" action="<?= BASE_URL ?>/?url=user/update">
+          <input type="hidden" name="id" value="<?= (int)$user['id'] ?>">
+          
           <div class="mb-3">
             <label class="form-label fw-semibold">
               Nome Completo <span class="text-danger">*</span>
@@ -36,7 +38,7 @@
                    name="name" 
                    class="form-control" 
                    placeholder="Digite o nome completo"
-                   value="<?= htmlspecialchars($form['name'] ?? '') ?>"
+                   value="<?= htmlspecialchars($user['name']) ?>"
                    required>
           </div>
           
@@ -48,7 +50,7 @@
                    name="email" 
                    class="form-control" 
                    placeholder="usuario@exemplo.com"
-                   value="<?= htmlspecialchars($form['email'] ?? '') ?>"
+                   value="<?= htmlspecialchars($user['email']) ?>"
                    required>
             <small class="form-text text-muted">
               Este será o login do usuário
@@ -62,44 +64,32 @@
               </label>
               <select name="role" class="form-select" required>
                 <?php 
-                $selectedRole = $form['role'] ?? 'user';
+                $currentRole = $user['role'];
                 foreach (User::getRoles() as $value => $label): 
                 ?>
-                  <option value="<?= $value ?>" <?= $selectedRole == $value ? 'selected' : '' ?>>
+                  <option value="<?= $value ?>" <?= $currentRole == $value ? 'selected' : '' ?>>
                     <?= $label ?>
                   </option>
                 <?php endforeach; ?>
               </select>
-              <small class="form-text text-muted">
-                <strong>Admin:</strong> Acesso total<br>
-                <strong>TI:</strong> Gerencia tickets<br>
-                <strong>Usuário:</strong> Abre tickets
-              </small>
             </div>
             
             <div class="col-md-6 mb-3">
               <label class="form-label fw-semibold">Status</label>
               <select name="status" class="form-select">
-                <option value="active" <?= ($form['status'] ?? 'active') == 'active' ? 'selected' : '' ?>>
+                <option value="active" <?= $user['status'] == 'active' ? 'selected' : '' ?>>
                   Ativo
                 </option>
-                <option value="inactive" <?= ($form['status'] ?? '') == 'inactive' ? 'selected' : '' ?>>
+                <option value="inactive" <?= $user['status'] == 'inactive' ? 'selected' : '' ?>>
                   Inativo
                 </option>
               </select>
             </div>
           </div>
           
-          <div class="alert alert-info">
-            <i class="bi bi-info-circle me-2"></i>
-            <strong>Senha padrão:</strong> senha123
-            <br>
-            <small>O usuário poderá alterar a senha após o primeiro login.</small>
-          </div>
-          
           <div class="d-flex gap-2 mt-4">
             <button type="submit" class="btn btn-success">
-              <i class="bi bi-check-lg me-1"></i>Criar Usuário
+              <i class="bi bi-check-lg me-1"></i>Salvar Alterações
             </button>
             <a href="<?= BASE_URL ?>/?url=user/index" class="btn btn-outline-secondary">
               <i class="bi bi-x-lg me-1"></i>Cancelar
@@ -111,38 +101,37 @@
   </div>
   
   <div class="col-lg-4">
-    <div class="card bg-light shadow-sm">
+    <div class="card shadow-sm mb-3">
       <div class="card-body">
         <h6 class="card-title">
-          <i class="bi bi-shield-check me-2"></i>Níveis de Acesso
+          <i class="bi bi-info-circle me-2"></i>Informações
         </h6>
         <hr>
-        <div class="mb-3">
-          <span class="badge bg-danger mb-2">Administrador</span>
-          <p class="small mb-0">
-            • Acesso total ao sistema<br>
-            • Gerencia usuários<br>
-            • Gerencia tickets<br>
-            • Configurações do sistema
-          </p>
-        </div>
-        <div class="mb-3">
-          <span class="badge bg-primary mb-2">TI</span>
-          <p class="small mb-0">
-            • Visualiza todos os tickets<br>
-            • Atribui e gerencia tickets<br>
-            • Altera status de tickets
-          </p>
-        </div>
-        <div>
-          <span class="badge bg-secondary mb-2">Usuário</span>
-          <p class="small mb-0">
-            • Abre tickets<br>
-            • Visualiza seus tickets<br>
-            • Comenta em tickets
-          </p>
-        </div>
-        </div>
+        <p class="mb-2">
+          <strong>ID:</strong> <?= $user['id'] ?>
+        </p>
+        <p class="mb-2">
+          <strong>Criado em:</strong><br>
+          <?= date('d/m/Y \à\s H:i', strtotime($user['created_at'])) ?>
+        </p>
+        <?php if (!empty($user['updated_at'])): ?>
+        <p class="mb-0">
+          <strong>Última atualização:</strong><br>
+          <?= date('d/m/Y \à\s H:i', strtotime($user['updated_at'])) ?>
+        </p>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <div class="card border-warning shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title text-warning">
+          <i class="bi bi-exclamation-triangle me-2"></i>Atenção
+        </h6>
+        <p class="small mb-0">
+          Ao alterar o papel do usuário, suas permissões no sistema serão modificadas imediatamente.
+        </p>
+      </div>
     </div>
   </div>
 </div>
