@@ -158,20 +158,13 @@ class Ticket {
 public function getManagementKPIs(): array {
     $sql = "
         SELECT 
-            -- Totais básicos
             COUNT(*) as total_tickets,
             COUNT(CASE WHEN status = 'open' THEN 1 END) as aguardando_atendimento,
             COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as em_atendimento,
             COUNT(CASE WHEN status = 'closed' THEN 1 END) as resolvidos,
-            
-            -- Prioridades críticas
             COUNT(CASE WHEN priority IN ('critical', 'high') AND status != 'closed' THEN 1 END) as urgentes_abertos,
-            
-            -- Performance
             COUNT(CASE WHEN status = 'closed' AND DATE(updated_at) = CURDATE() THEN 1 END) as resolvidos_hoje,
             COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) as novos_hoje,
-            
-            -- Alertas
             COUNT(CASE WHEN assigned_to IS NULL AND status = 'open' THEN 1 END) as sem_responsavel,
             COUNT(CASE WHEN DATEDIFF(NOW(), created_at) > 3 AND status != 'closed' THEN 1 END) as atrasados
         FROM tickets
@@ -180,6 +173,16 @@ public function getManagementKPIs(): array {
     
     $stmt = $this->db->query($sql);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $data['total_tickets'] = (int)($data['total_tickets'] ?? 0);
+    $data['aguardando_atendimento'] = (int)($data['aguardando_atendimento'] ?? 0);
+    $data['em_atendimento'] = (int)($data['em_atendimento'] ?? 0);
+    $data['resolvidos'] = (int)($data['resolvidos'] ?? 0);
+    $data['urgentes_abertos'] = (int)($data['urgentes_abertos'] ?? 0);
+    $data['resolvidos_hoje'] = (int)($data['resolvidos_hoje'] ?? 0);
+    $data['novos_hoje'] = (int)($data['novos_hoje'] ?? 0);
+    $data['sem_responsavel'] = (int)($data['sem_responsavel'] ?? 0);
+    $data['atrasados'] = (int)($data['atrasados'] ?? 0);
     
     $data['taxa_resolucao'] = $data['total_tickets'] > 0 
         ? round(($data['resolvidos'] / $data['total_tickets']) * 100, 1) 
@@ -190,12 +193,111 @@ public function getManagementKPIs(): array {
         FROM tickets
         WHERE status = 'closed' 
         AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        AND updated_at IS NOT NULL
     ";
     $stmtTime = $this->db->query($sqlTime);
     $timeData = $stmtTime->fetch(PDO::FETCH_ASSOC);
     $data['tempo_medio_horas'] = $timeData['tempo_medio'] ? round($timeData['tempo_medio'], 1) : 0;
     
     return $data;
+}
+
+
+public function getOpenVsClosedTrend(int $days = 7): array {
+    $sql = "
+        SELECT 
+            DATE(created_at) as data,
+            COUNT(*) as total,
+            COUNT(CASE WHEN status = 'open' THEN 1 END) as abertos,
+            COUNT(CASE WHEN status = 'closed' THEN 1 END) as fechados
+        FROM tickets
+        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+        GROUP BY DATE(created_at)
+        ORDER BY data DESC
+    ";
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->bindValue(':days', $days, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (empty($result)) {
+        return [];
+    }
+    
+    return $result;
+}
+
+public function getTopDepartments(int $limit = 5): array {
+    $sql = "
+        SELECT 
+            COALESCE(u.department, 'Não definido') as setor,
+            COUNT(t.id) as total_chamados,
+            COUNT(CASE WHEN t.status = 'open' THEN 1 END) as abertos,
+            COUNT(CASE WHEN t.status = 'closed' THEN 1 END) as fechados
+        FROM tickets t
+        JOIN users u ON u.id = t.requester_id
+        WHERE t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY u.department
+        HAVING total_chamados > 0
+        ORDER BY total_chamados DESC
+        LIMIT :limit
+    ";
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+public function getTopIssues(int $limit = 10): array {
+    $sql = "
+        SELECT 
+            title,
+            priority,
+            COUNT(*) as ocorrencias,
+            COUNT(CASE WHEN status = 'closed' THEN 1 END) as resolvidos,
+            MAX(created_at) as ultima_ocorrencia
+        FROM tickets
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY title, priority
+        HAVING COUNT(*) > 1
+        ORDER BY ocorrencias DESC
+        LIMIT :limit
+    ";
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+public function getTopRequesters(int $limit = 10): array {
+    $sql = "
+        SELECT 
+            u.id,
+            u.name,
+            u.email,
+            COUNT(t.id) as total_chamados,
+            COUNT(CASE WHEN t.status = 'open' THEN 1 END) as abertos,
+            COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END) as em_andamento,
+            COUNT(CASE WHEN t.status = 'closed' THEN 1 END) as fechados,
+            MAX(t.created_at) as ultimo_chamado
+        FROM users u
+        JOIN tickets t ON t.requester_id = u.id
+        WHERE t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY u.id, u.name, u.email
+        HAVING total_chamados > 0
+        ORDER BY total_chamados DESC
+        LIMIT :limit
+    ";
+    
+    $stmt = $this->db->prepare($sql);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 public function getTechPerformance(): array {
@@ -207,13 +309,13 @@ public function getTechPerformance(): array {
             COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END) as em_andamento,
             COUNT(CASE WHEN t.status = 'open' THEN 1 END) as pendentes,
             AVG(CASE 
-                WHEN t.status = 'closed' 
+                WHEN t.status = 'closed' AND t.updated_at IS NOT NULL
                 THEN TIMESTAMPDIFF(HOUR, t.created_at, t.updated_at) 
             END) as tempo_medio_resolucao
         FROM users u
         LEFT JOIN tickets t ON t.assigned_to = u.id 
             AND t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        WHERE u.role IN ('ti', 'admin')
+        WHERE u.role IN ('ti', 'admin') AND u.status = 'active'
         GROUP BY u.id, u.name
         HAVING total_atribuidos > 0
         ORDER BY concluidos DESC
@@ -223,6 +325,11 @@ public function getTechPerformance(): array {
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     foreach ($data as &$tech) {
+        $tech['total_atribuidos'] = (int)$tech['total_atribuidos'];
+        $tech['concluidos'] = (int)$tech['concluidos'];
+        $tech['em_andamento'] = (int)$tech['em_andamento'];
+        $tech['pendentes'] = (int)$tech['pendentes'];
+        
         $tech['taxa_conclusao'] = $tech['total_atribuidos'] > 0 
             ? round(($tech['concluidos'] / $tech['total_atribuidos']) * 100, 1) 
             : 0;

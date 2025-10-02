@@ -41,49 +41,59 @@ function getRoleBadge($role) {
     <div class="table-responsive">
       <table class="table table-hover m-0 align-middle">
         <thead class="table-light">
-          <tr>
-            <th class="ps-3">Nome</th>
-            <th>E-mail</th>
-            <th style="width: 150px;">Papel</th>
-            <th style="width: 120px;">Status</th>
-            <th style="width: 150px;">Criado em</th>
-            <th class="text-end pe-3" style="width: 250px;">Ações</th>
-          </tr>
+            <tr>
+                <th class="ps-3">Nome</th>
+                <th>E-mail</th>
+                <th style="width: 150px;">Departamento</th>
+                <th style="width: 120px;">Papel</th>
+                <th style="width: 100px;">Status</th>
+                <th style="width: 150px;">Criado em</th>
+                <th class="text-end pe-3" style="width: 250px;">Ações</th>
+            </tr>
         </thead>
         <tbody>
         <?php if (empty($users)): ?>
-          <tr>
-            <td colspan="6" class="text-center text-muted py-5">
-              <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-              Nenhum usuário encontrado.
-            </td>
-          </tr>
-        <?php else: ?>
-          <?php foreach ($users as $us): ?>
             <tr>
-              <td class="ps-3">
-                <strong><?= htmlspecialchars($us['name']) ?></strong>
-                <?php if ($us['id'] == $_SESSION['user']['id']): ?>
-                  <span class="badge bg-info ms-2">Você</span>
-                <?php endif; ?>
-              </td>
-              <td><?= htmlspecialchars($us['email']) ?></td>
-              <td><?= getRoleBadge($us['role']) ?></td>
-              <td>
-                <?php if ($us['status'] === 'active'): ?>
-                  <span class="badge bg-success">
-                    <i class="bi bi-check-circle me-1"></i>Ativo
-                  </span>
-                <?php else: ?>
-                  <span class="badge bg-secondary">
-                    <i class="bi bi-x-circle me-1"></i>Inativo
-                  </span>
-                <?php endif; ?>
-              </td>
-              <td>
-                <small><?= date('d/m/Y', strtotime($us['created_at'])) ?></small>
-              </td>
-              <td class="text-end pe-3">
+                <td colspan="7" class="text-center text-muted py-5">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Nenhum usuário encontrado.
+                </td>
+            </tr>
+        <?php else: ?>
+            <?php foreach ($users as $us): ?>
+                <tr>
+                    <td class="ps-3">
+                        <strong><?= htmlspecialchars($us['name']) ?></strong>
+                        <?php if ($us['id'] == $_SESSION['user']['id']): ?>
+                            <span class="badge bg-info ms-2">Você</span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= htmlspecialchars($us['email']) ?></td>
+                    <td>
+                        <?php if ($us['department']): ?>
+                            <span class="badge bg-primary">
+                                <?= htmlspecialchars($us['department']) ?>
+                            </span>
+                        <?php else: ?>
+                            <span class="text-muted small">Não definido</span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= getRoleBadge($us['role']) ?></td>
+                    <td>
+                        <?php if ($us['status'] === 'active'): ?>
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle me-1"></i>Ativo
+                            </span>
+                        <?php else: ?>
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Inativo
+                            </span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <small><?= date('d/m/Y', strtotime($us['created_at'])) ?></small>
+                    </td>
+                    <td class="text-end pe-3">
                 <div class="btn-group btn-group-sm">
                   <a href="<?= BASE_URL ?>/?url=user/edit&id=<?= $us['id'] ?>" 
                      class="btn btn-outline-primary" 
@@ -92,8 +102,8 @@ function getRoleBadge($role) {
                   </a>
                 </div>
               </td>
-            </tr>
-          <?php endforeach; ?>
+                </tr>
+            <?php endforeach; ?>
         <?php endif; ?>
         </tbody>
       </table>

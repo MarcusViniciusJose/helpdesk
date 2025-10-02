@@ -56,39 +56,58 @@
           </div>
           
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-semibold">
-                Papel <span class="text-danger">*</span>
-              </label>
-              <select name="role" class="form-select" required>
-                <?php 
-                $selectedRole = $form['role'] ?? 'user';
-                foreach (User::getRoles() as $value => $label): 
-                ?>
-                  <option value="<?= $value ?>" <?= $selectedRole == $value ? 'selected' : '' ?>>
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">
+            Papel (Permissão) <span class="text-danger">*</span>
+        </label>
+        <select name="role" class="form-select" required>
+            <?php 
+            $selectedRole = $form['role'] ?? 'user';
+            foreach (User::getRoles() as $value => $label): 
+            ?>
+                <option value="<?= $value ?>" <?= $selectedRole == $value ? 'selected' : '' ?>>
                     <?= $label ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-              <small class="form-text text-muted">
-                <strong>Admin:</strong> Acesso total<br>
-                <strong>TI:</strong> Gerencia tickets<br>
-                <strong>Usuário:</strong> Abre tickets
-              </small>
-            </div>
-            
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-semibold">Status</label>
-              <select name="status" class="form-select">
-                <option value="active" <?= ($form['status'] ?? 'active') == 'active' ? 'selected' : '' ?>>
-                  Ativo
                 </option>
-                <option value="inactive" <?= ($form['status'] ?? '') == 'inactive' ? 'selected' : '' ?>>
-                  Inativo
+            <?php endforeach; ?>
+        </select>
+        <small class="form-text text-muted">
+            Define as permissões no sistema
+        </small>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">
+            Departamento/Setor
+        </label>
+        <select name="department" class="form-select">
+            <option value="">-- Selecione --</option>
+            <?php 
+            $selectedDept = $form['department'] ?? '';
+            foreach (User::getDepartments() as $value => $label): 
+            ?>
+                <option value="<?= $value ?>" <?= $selectedDept == $value ? 'selected' : '' ?>>
+                    <?= $label ?>
                 </option>
-              </select>
-            </div>
-          </div>
+            <?php endforeach; ?>
+        </select>
+        <small class="form-text text-muted">
+            Setor onde o usuário trabalha
+        </small>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold">Status</label>
+    <select name="status" class="form-select">
+        <option value="active" <?= ($form['status'] ?? 'active') == 'active' ? 'selected' : '' ?>>
+            Ativo
+        </option>
+        <option value="inactive" <?= ($form['status'] ?? '') == 'inactive' ? 'selected' : '' ?>>
+            Inativo
+        </option>
+    </select>
+</div>
+          
           
           <div class="alert alert-info">
             <i class="bi bi-info-circle me-2"></i>

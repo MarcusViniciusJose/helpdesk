@@ -29,58 +29,65 @@ class UserController {
         require __DIR__ . '/../views/users/create.php';
     }
 
-    public function store() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . '/?url=user/index');
-            return;
-        }
-
-        $name   = trim($_POST['name'] ?? '');
-        $email  = trim($_POST['email'] ?? '');
-        $role   = $_POST['role'] ?? 'user';
-        $status = $_POST['status'] ?? 'active';
-
-        $validRoles = array_keys(User::getRoles());
-        if (!in_array($role, $validRoles, true)) {
-            $role = 'user';
-        }
-
-        $plainDefault  = 'senha123';
-        $passwordHash  = password_hash($plainDefault, PASSWORD_BCRYPT);
-
-        $errors = [];
-        if ($name === '') {
-            $errors[] = 'Nome é obrigatório';
-        }
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'E-mail válido é obrigatório';
-        }
-        if (!in_array($status, ['active', 'inactive'], true)) {
-            $errors[] = 'Status inválido';
-        }
-
-        if ($email !== '' && $this->userModel->findByEmail($email)) {
-            $errors[] = 'Já existe um usuário com esse e-mail.';
-        }
-
-        if ($errors) {
-            $form = compact('name', 'email', 'role', 'status');
-            require __DIR__ . '/../views/users/create.php';
-            return;
-        }
-
-        $this->userModel->create([
-            'name'          => $name,
-            'email'         => $email,
-            'password_hash' => $passwordHash,
-            'role'          => $role,
-            'status'        => $status,
-        ]);
-
-        $_SESSION['success'] = 'Usuário criado com sucesso! Senha padrão: senha123';
+public function store() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         header('Location: ' . BASE_URL . '/?url=user/index');
-        exit;
+        return;
     }
+
+    $name       = trim($_POST['name'] ?? '');
+    $email      = trim($_POST['email'] ?? '');
+    $role       = $_POST['role'] ?? 'user';
+    $department = $_POST['department'] ?? null;
+    $status     = $_POST['status'] ?? 'active';
+
+    $validRoles = array_keys(User::getRoles());
+    if (!in_array($role, $validRoles, true)) {
+        $role = 'user';
+    }
+
+    $validDepartments = array_keys(User::getDepartments());
+    if ($department && !in_array($department, $validDepartments, true)) {
+        $department = null;
+    }
+
+    $plainDefault  = 'senha123';
+    $passwordHash  = password_hash($plainDefault, PASSWORD_BCRYPT);
+
+    $errors = [];
+    if ($name === '') {
+        $errors[] = 'Nome é obrigatório';
+    }
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'E-mail válido é obrigatório';
+    }
+    if (!in_array($status, ['active', 'inactive'], true)) {
+        $errors[] = 'Status inválido';
+    }
+
+    if ($email !== '' && $this->userModel->findByEmail($email)) {
+        $errors[] = 'Já existe um usuário com esse e-mail.';
+    }
+
+    if ($errors) {
+        $form = compact('name', 'email', 'role', 'department', 'status');
+        require __DIR__ . '/../views/users/create.php';
+        return;
+    }
+
+    $this->userModel->create([
+        'name'          => $name,
+        'email'         => $email,
+        'password_hash' => $passwordHash,
+        'role'          => $role,
+        'department'    => $department,
+        'status'        => $status,
+    ]);
+
+    $_SESSION['success'] = 'Usuário criado com sucesso! Senha padrão: senha123';
+    header('Location: ' . BASE_URL . '/?url=user/index');
+    exit;
+}
 
     public function edit() {
         $id = $_GET['id'] ?? null;
@@ -110,69 +117,75 @@ class UserController {
     }
 
     public function update() {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . BASE_URL . '/?url=user/index');
-            return;
-        }
-
-        $id     = $_POST['id'] ?? null;
-        $name   = trim($_POST['name'] ?? '');
-        $email  = trim($_POST['email'] ?? '');
-        $role   = $_POST['role'] ?? 'user';
-        $status = $_POST['status'] ?? 'active';
-
-        if (!$id) {
-            $_SESSION['error'] = 'Usuário não encontrado';
-            header('Location: ' . BASE_URL . '/?url=user/index');
-            return;
-        }
-
-        $user = $this->userModel->findById($id);
-        if (!$user) {
-            $_SESSION['error'] = 'Usuário não encontrado';
-            header('Location: ' . BASE_URL . '/?url=user/index');
-            return;
-        }
-
-        $validRoles = array_keys(User::getRoles());
-        if (!in_array($role, $validRoles, true)) {
-            $role = 'user';
-        }
-
-        $errors = [];
-        if ($name === '') {
-            $errors[] = 'Nome é obrigatório';
-        }
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'E-mail válido é obrigatório';
-        }
-        if (!in_array($status, ['active', 'inactive'], true)) {
-            $errors[] = 'Status inválido';
-        }
-
-        $existingUser = $this->userModel->findByEmail($email);
-        if ($existingUser && $existingUser['id'] != $id) {
-            $errors[] = 'Já existe outro usuário com esse e-mail.';
-        }
-
-        if ($errors) {
-            $user = array_merge($user, compact('name', 'email', 'role', 'status'));
-            require __DIR__ . '/../views/users/edit.php';
-            return;
-        }
-
-        $this->userModel->update($id, [
-            'name'   => $name,
-            'email'  => $email,
-            'role'   => $role,
-            'status' => $status,
-        ]);
-
-        $_SESSION['success'] = 'Usuário atualizado com sucesso!';
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         header('Location: ' . BASE_URL . '/?url=user/index');
-        exit;
+        return;
     }
 
+    $id         = $_POST['id'] ?? null;
+    $name       = trim($_POST['name'] ?? '');
+    $email      = trim($_POST['email'] ?? '');
+    $role       = $_POST['role'] ?? 'user';
+    $department = $_POST['department'] ?? null;
+    $status     = $_POST['status'] ?? 'active';
+
+    if (!$id) {
+        $_SESSION['error'] = 'Usuário não encontrado';
+        header('Location: ' . BASE_URL . '/?url=user/index');
+        return;
+    }
+
+    $user = $this->userModel->findById($id);
+    if (!$user) {
+        $_SESSION['error'] = 'Usuário não encontrado';
+        header('Location: ' . BASE_URL . '/?url=user/index');
+        return;
+    }
+
+    $validRoles = array_keys(User::getRoles());
+    if (!in_array($role, $validRoles, true)) {
+        $role = 'user';
+    }
+    
+    $validDepartments = array_keys(User::getDepartments());
+    if ($department && !in_array($department, $validDepartments, true)) {
+        $department = null;
+    }
+
+    $errors = [];
+    if ($name === '') {
+        $errors[] = 'Nome é obrigatório';
+    }
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'E-mail válido é obrigatório';
+    }
+    if (!in_array($status, ['active', 'inactive'], true)) {
+        $errors[] = 'Status inválido';
+    }
+
+    $existingUser = $this->userModel->findByEmail($email);
+    if ($existingUser && $existingUser['id'] != $id) {
+        $errors[] = 'Já existe outro usuário com esse e-mail.';
+    }
+
+    if ($errors) {
+        $user = array_merge($user, compact('name', 'email', 'role', 'department', 'status'));
+        require __DIR__ . '/../views/users/edit.php';
+        return;
+    }
+
+    $this->userModel->update($id, [
+        'name'       => $name,
+        'email'      => $email,
+        'role'       => $role,
+        'department' => $department,
+        'status'     => $status,
+    ]);
+
+    $_SESSION['success'] = 'Usuário atualizado com sucesso!';
+    header('Location: ' . BASE_URL . '/?url=user/index');
+    exit;
+}
     public function toggleStatus() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . BASE_URL . '/?url=user/index');

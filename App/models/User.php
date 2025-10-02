@@ -11,7 +11,7 @@ class User {
     }
 
     public function all(){
-        $sql = "SELECT id, name, email, role, status, created_at 
+        $sql = "SELECT id, name, email, role, department, status, created_at 
                 FROM users 
                 ORDER BY name ASC";
         return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -32,14 +32,15 @@ class User {
     }
 
     public function create(array $data): int {
-        $sql = "INSERT INTO users (name, email, password_hash, role, status, created_at, updated_at)
-                VALUES (:name, :email, :password_hash, :role, :status, NOW(), NOW())";
+        $sql = "INSERT INTO users (name, email, password_hash, role, department, status, created_at, updated_at)
+                VALUES (:name, :email, :password_hash, :role, :department, :status, NOW(), NOW())";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':name'          => $data['name'],
             ':email'         => $data['email'],
             ':password_hash' => $data['password_hash'],
             ':role'          => $data['role'],
+            ':department'    => $data['department'] ?? null,
             ':status'        => $data['status'],
         ]);
         return (int)$this->db->lastInsertId();
@@ -49,17 +50,19 @@ class User {
         $sql = "UPDATE users 
                 SET name = :name, 
                     email = :email, 
-                    role = :role, 
+                    role = :role,
+                    department = :department,
                     status = :status,
                     updated_at = NOW()
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
-            ':name'   => $data['name'],
-            ':email'  => $data['email'],
-            ':role'   => $data['role'],
-            ':status' => $data['status'],
-            ':id'     => $id,
+            ':name'       => $data['name'],
+            ':email'      => $data['email'],
+            ':role'       => $data['role'],
+            ':department' => $data['department'] ?? null,
+            ':status'     => $data['status'],
+            ':id'         => $id,
         ]);
     }
 
@@ -89,7 +92,7 @@ class User {
         $check->execute([$id, $id]);
         
         if ($check->fetchColumn() > 0) {
-            return false; 
+            return false;
         }
         
         $stmt = $this->db->prepare("DELETE FROM users WHERE id = ?");
@@ -98,14 +101,37 @@ class User {
 
     public static function getRoles(): array {
         return [
-            'user'      => 'Usuário',
-            'ti'        => 'TI',
-            'admin'     => 'Administrador',
+            'user'  => 'Usuário',
+            'ti'    => 'TI',
+            'admin' => 'Administrador',
+        ];
+    }
+
+    public static function getDepartments(): array {
+        return [
+            'RH&DP'                 => 'RH & Desenvolvimento de Pessoas',
+            'Gestão da qualidade'   => 'Gestão da Qualidade',
+            'CTRL. da qualidade'    => 'Controle da Qualidade',
+            'PCP'                   => 'PCP',
+            'Administrativo'        => 'Administrativo',
+            'Engenharia'            => 'Engenharia',
+            'Produção'              => 'Produção',
+            'Manutenção'            => 'Manutenção',
+            'Expedição'             => 'Expedição',
+            'Recebimento'           => 'Recebimento',
+            'Setup'                 => 'Setup',
+            'TI'                    => 'TI',
         ];
     }
 
     public static function getRoleLabel(string $role): string {
         $roles = self::getRoles();
         return $roles[$role] ?? $role;
+    }
+
+    public static function getDepartmentLabel(?string $department): string {
+        if (!$department) return 'Não definido';
+        $departments = self::getDepartments();
+        return $departments[$department] ?? $department;
     }
 }

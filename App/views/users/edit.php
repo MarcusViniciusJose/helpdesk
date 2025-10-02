@@ -58,34 +58,57 @@
           </div>
           
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-semibold">
-                Papel <span class="text-danger">*</span>
-              </label>
-              <select name="role" class="form-select" required>
-                <?php 
-                $currentRole = $user['role'];
-                foreach (User::getRoles() as $value => $label): 
-                ?>
-                  <option value="<?= $value ?>" <?= $currentRole == $value ? 'selected' : '' ?>>
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">
+            Papel (Permissão) <span class="text-danger">*</span>
+        </label>
+        <select name="role" class="form-select" required>
+            <?php 
+            $selectedRole = $form['role'] ?? 'user';
+            foreach (User::getRoles() as $value => $label): 
+            ?>
+                <option value="<?= $value ?>" <?= $selectedRole == $value ? 'selected' : '' ?>>
                     <?= $label ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
-            
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-semibold">Status</label>
-              <select name="status" class="form-select">
-                <option value="active" <?= $user['status'] == 'active' ? 'selected' : '' ?>>
-                  Ativo
                 </option>
-                <option value="inactive" <?= $user['status'] == 'inactive' ? 'selected' : '' ?>>
-                  Inativo
+            <?php endforeach; ?>
+        </select>
+        <small class="form-text text-muted">
+            Define as permissões no sistema
+        </small>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-semibold">
+            Departamento/Setor
+        </label>
+        <select name="department" class="form-select">
+            <option value="">-- Selecione --</option>
+            <?php 
+            $selectedDept = $form['department'] ?? '';
+            foreach (User::getDepartments() as $value => $label): 
+            ?>
+                <option value="<?= $value ?>" <?= $selectedDept == $value ? 'selected' : '' ?>>
+                    <?= $label ?>
                 </option>
-              </select>
-            </div>
-          </div>
+            <?php endforeach; ?>
+        </select>
+        <small class="form-text text-muted">
+            Setor onde o usuário trabalha
+        </small>
+    </div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-semibold">Status</label>
+    <select name="status" class="form-select">
+        <option value="active" <?= ($form['status'] ?? 'active') == 'active' ? 'selected' : '' ?>>
+            Ativo
+        </option>
+        <option value="inactive" <?= ($form['status'] ?? '') == 'inactive' ? 'selected' : '' ?>>
+            Inativo
+        </option>
+    </select>
+</div>
           
           <div class="d-flex gap-2 mt-4">
             <button type="submit" class="btn btn-success">
