@@ -9,9 +9,11 @@ require_once __DIR__ . '/../models/Notification.php';
 class TicketController{
     
     private $ticketModel;
+    private $notificationModel;
     
     public function __construct(){
         $this->ticketModel = new Ticket();
+        $this->notificationModel = new Notification();
     }
     
     public function index(){
@@ -41,25 +43,30 @@ class TicketController{
             return;
         }
 
-        $id = $this->ticketModel->create($data);
+        $ticketId = $this->ticketModel->create($data);
         
-        $notification = new Notification();
-        $db = Database::conn();
-        $stmt = $db->query("SELECT id FROM users WHERE role IN ('ti', 'admin')");
-        $receivers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $priorityLabel = [
+            'low' => 'Baixa',
+            'medium' => 'Média',
+            'high' => 'Alta',
+            'critical' => 'CRÍTICA'
+        ][$data['priority']] ?? $data['priority'];
         
-        foreach($receivers as $r){
-            $notification->create(
-                $r['id'], 
-                "Novo chamado aberto: " . htmlspecialchars($data['title']), 
-                "", 
-                BASE_URL . "/?url=ticket/show&id=" . $id, 
-                $id
-            );
-        }
+        $message = sprintf(
+            "Novo chamado #%d criado por %s - Prioridade: %s",
+            $ticketId,
+            Auth::user()['name'],
+            $priorityLabel
+        );
+        
+        $this->notificationModel->notifyAdminsAndTI(
+            $message,
+            BASE_URL . "/?url=ticket/show&id=" . $ticketId,
+            $ticketId
+        );
 
         $_SESSION['success'] = 'Chamado criado com sucesso!';
-        header('Location: ' . BASE_URL . '/?url=ticket/show&id=' . $id);
+        header('Location: ' . BASE_URL . '/?url=ticket/show&id=' . $ticketId);
         exit;
     }
 
@@ -191,14 +198,71 @@ class TicketController{
         Auth::requireLogin();
         
         $ticketId = $_POST['ticket_id'] ?? null;
-        $status = $_POST['status'] ?? null;
+        $newStatus = $_POST['status'] ?? null;
         
-        if(!$ticketId || !$status){
+        if(!$ticketId || !$newStatus){
             header('Location: ' . BASE_URL . '/?url=ticket/index');
             return;
         }
         
-        $this->ticketModel->updateStatus($ticketId, $status);
+        $ticket = $this->ticketModel->getById($ticketId);
+        if (!$ticket) {
+            $_SESSION['error'] = 'Chamado não encontrado';
+            header('Location: ' . BASE_URL . '/?url=ticket/index');
+            return;
+        }
+        
+        $oldStatus = $ticket['status'];
+        
+        $this->ticketModel->updateStatus($ticketId, $newStatus);
+        
+        $statusLabels = [
+            'open' => 'Aberto',
+            'in_progress' => 'Em Andamento',
+            'closed' => 'Fechado'
+        ];
+        
+        $link = BASE_URL . "/?url=ticket/show&id=" . $ticketId;
+        
+        if ($newStatus === 'in_progress' && $oldStatus !== 'in_progress') {
+            $message = sprintf(
+                "Seu chamado #%d '%s' está agora EM ANDAMENTO",
+                $ticketId,
+                $ticket['title']
+            );
+            
+            $this->notificationModel->create(
+                $ticket['requester_id'],
+                $message,
+                $link,
+                $ticketId
+            );
+        }
+        
+        if ($newStatus === 'closed' && $oldStatus !== 'closed') {
+            $message = sprintf(
+                "Seu chamado #%d '%s' foi CONCLUÍDO",
+                $ticketId,
+                $ticket['title']
+            );
+            
+            $this->notificationModel->create(
+                $ticket['requester_id'],
+                $message,
+                $link,
+                $ticketId
+            );
+        }
+        
+        if ($newStatus === 'open' && $oldStatus === 'closed') {
+            $message = sprintf(
+                "Chamado #%d foi REABERTO por %s",
+                $ticketId,
+                Auth::user()['name']
+            );
+            
+            $this->notificationModel->notifyAdminsAndTI($message, $link, $ticketId);
+        }
         
         $_SESSION['success'] = 'Status atualizado com sucesso!';
         header('Location: ' . BASE_URL . '/?url=ticket/show&id=' . $ticketId);
@@ -223,18 +287,41 @@ class TicketController{
             return;
         }
         
+        $ticket = $this->ticketModel->getById($ticketId);
+        if (!$ticket) {
+            $_SESSION['error'] = 'Chamado não encontrado';
+            header('Location: ' . BASE_URL . '/?url=ticket/index');
+            return;
+        }
+        
         $this->ticketModel->assignTo($ticketId, $techId);
         
+        $link = BASE_URL . "/?url=ticket/show&id=" . $ticketId;
+        
         if($techId){
-            $ticket = $this->ticketModel->getById($ticketId);
-            $notification = new Notification();
-            $notification->create(
-                $techId,
-                "Chamado atribuído a você: " . htmlspecialchars($ticket['title']),
-                "",
-                BASE_URL . "/?url=ticket/show&id=" . $ticketId,
-                $ticketId
+            $message = sprintf(
+                "Chamado #%d '%s' foi atribuído a você",
+                $ticketId,
+                $ticket['title']
             );
+            
+            $this->notificationModel->create($techId, $message, $link, $ticketId);
+            
+            if ($ticket['requester_id'] != $techId) {
+                $techUser = (new User())->findById($techId);
+                $messageRequester = sprintf(
+                    "Seu chamado #%d foi atribuído para %s",
+                    $ticketId,
+                    $techUser['name']
+                );
+                
+                $this->notificationModel->create(
+                    $ticket['requester_id'],
+                    $messageRequester,
+                    $link,
+                    $ticketId
+                );
+            }
         }
         
         $_SESSION['success'] = 'Chamado atribuído com sucesso!';
@@ -257,27 +344,40 @@ class TicketController{
         $commentModel->create($ticketId, Auth::user()['id'], $content);
 
         $ticket = $this->ticketModel->getById($ticketId);
-        $notification = new Notification();
-        $message = Auth::user()['name'] . " comentou no chamado";
+        $link = BASE_URL . "/?url=ticket/show&id=" . $ticketId;
+        $currentUserId = Auth::user()['id'];
         
-        if($ticket['requester_id'] != Auth::user()['id']){
-            $notification->create(
-                $ticket['requester_id'], 
-                $message, 
-                htmlspecialchars(substr($content, 0, 100)),
-                BASE_URL . "/?url=ticket/show&id=" . $ticketId, 
-                $ticketId
-            );
+        $message = sprintf(
+            "%s comentou no chamado #%d",
+            Auth::user()['name'],
+            $ticketId
+        );
+        
+        $toNotify = [];
+        
+        if ($ticket['requester_id'] != $currentUserId) {
+            $toNotify[] = $ticket['requester_id'];
         }
         
-        if($ticket['assigned_to'] && $ticket['assigned_to'] != Auth::user()['id']){
-            $notification->create(
-                $ticket['assigned_to'], 
-                $message,
-                htmlspecialchars(substr($content, 0, 100)), 
-                BASE_URL . "/?url=ticket/show&id=" . $ticketId, 
-                $ticketId
-            );
+        if ($ticket['assigned_to'] && $ticket['assigned_to'] != $currentUserId) {
+            $toNotify[] = $ticket['assigned_to'];
+        }
+        
+        if (!in_array(Auth::user()['role'], ['admin', 'ti'])) {
+            $db = Database::conn();
+            $stmt = $db->query("SELECT id FROM users WHERE role IN ('admin', 'ti') AND status = 'active'");
+            $adminTI = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            
+            foreach ($adminTI as $userId) {
+                if ($userId != $currentUserId && !in_array($userId, $toNotify)) {
+                    $toNotify[] = $userId;
+                }
+            }
+        }
+        
+        $toNotify = array_unique($toNotify);
+        foreach ($toNotify as $userId) {
+            $this->notificationModel->create($userId, $message, $link, $ticketId);
         }
         
         $_SESSION['success'] = 'Comentário adicionado com sucesso!';

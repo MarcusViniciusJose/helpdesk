@@ -81,12 +81,103 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
             margin: 1rem 1.25rem;
         }
     </style>
+    <script>
+            (function() {
+                let notificationCount = 0;
+                
+                function fetchNotifications() {
+                    fetch('<?= BASE_URL ?>/?url=notification/get')
+                        .then(response => response.json())
+                        .then(data => {
+                            notificationCount = data.length;
+                            updateBadge();
+                            
+                            if (notificationCount > 0 && !sessionStorage.getItem('notifications_shown_' + data[0].id)) {
+                                showToast(data[0].message);
+                                sessionStorage.setItem('notifications_shown_' + data[0].id, '1');
+                            }
+                        })
+                        .catch(error => console.error('Erro ao buscar notificações:', error));
+                }
+                
+                function updateBadge() {
+                    const badge = document.getElementById('notification-count');
+                    if (badge) {
+                        if (notificationCount > 0) {
+                            badge.textContent = notificationCount > 99 ? '99+' : notificationCount;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }
+                
+                function showToast(message) {
+                    let toastContainer = document.getElementById('toast-container');
+                    if (!toastContainer) {
+                        toastContainer = document.createElement('div');
+                        toastContainer.id = 'toast-container';
+                        toastContainer.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            z-index: 9999;
+                        `;
+                        document.body.appendChild(toastContainer);
+                    }
+                    
+                    const toast = document.createElement('div');
+                    toast.className = 'alert alert-info alert-dismissible fade show shadow-lg';
+                    toast.style.cssText = `
+                        min-width: 300px;
+                        max-width: 400px;
+                        margin-bottom: 10px;
+                        animation: slideIn 0.3s ease-out;
+                    `;
+                    toast.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-bell-fill me-2 fs-5"></i>
+                            <div class="flex-grow-1">
+                                <strong class="d-block small">Nova Notificação</strong>
+                                <small>${message}</small>
+                            </div>
+                            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                    
+                    toastContainer.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 5000);
+                }
+                
+                fetchNotifications();
+                
+                setInterval(fetchNotifications, 30000);
+            })();
+            </script>
+
+            <style>
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+    </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             
             <nav class="col-md-3 col-lg-2 d-md-block sidebar p-0">
+                
                
                 <div class="sidebar-header">
                     <h4>
@@ -99,27 +190,36 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
                     <?php endif; ?>
                 </div>
                 
-                <div class="sidebar-content">
-                    <ul class="nav flex-column pt-3">
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= BASE_URL ?>/?url=dashboard/index">
-                                <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= BASE_URL ?>/?url=ticket/index">
-                                <i class="bi bi-ticket-perforated me-2"></i>Chamados
-                            </a>
-                        </li>
-                        
-                        <?php if ($isAdminOrTI): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= BASE_URL ?>/?url=user/index">
-                                <i class="bi bi-people-fill me-2"></i>Usuários
-                            </a>
-                        </li>
-                        <?php endif; ?>
-                    </ul>
+                        <div class="sidebar-content">
+                            <ul class="nav flex-column pt-3">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= BASE_URL ?>/?url=dashboard/index">
+                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= BASE_URL ?>/?url=ticket/index">
+                                        <i class="bi bi-ticket-perforated me-2"></i>Chamados
+                                    </a>
+                                </li>
+                                
+                                <?php if ($isAdminOrTI): ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= BASE_URL ?>/?url=user/index">
+                                        <i class="bi bi-people-fill me-2"></i>Usuários
+                                    </a>
+                                </li>
+                                <?php endif; ?>
+                                
+                                <li class="nav-item">
+                                    <a class="nav-link position-relative" href="<?= BASE_URL ?>/?url=notification/history">
+                                        <i class="bi bi-bell me-2"></i>Notificações
+                                        <span class="badge bg-danger rounded-pill position-absolute top-0 end-0 mt-2 me-2" 
+                                            id="notification-count" 
+                                            style="display: none; font-size: 0.65rem;">0</span>
+                                    </a>
+                                </li>
+                            </ul>
                     
                     <div class="nav-divider"></div>
                     
@@ -175,7 +275,7 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
                     link.classList.add('active');
                 }
             });
-        });
+        }); 
     </script>
 </body>
 </html>

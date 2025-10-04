@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../core/Database.php';
 
 class Notification {
     
@@ -23,6 +24,21 @@ class Notification {
         ]);
     }
 
+    public function createMultiple(array $userIds, $message, $link = null, $relatedTicketId = null){
+        foreach ($userIds as $userId) {
+            $this->create($userId, $message, $link, $relatedTicketId);
+        }
+    }
+
+    public function notifyAdminsAndTI($message, $link = null, $relatedTicketId = null){
+        $stmt = $this->db->query("SELECT id FROM users WHERE role IN ('admin', 'ti') AND status = 'active'");
+        $users = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        if (!empty($users)) {
+            $this->createMultiple($users, $message, $link, $relatedTicketId);
+        }
+    }
+
     public function getUnreadByUser($userId){
         $stmt = $this->db->prepare("
             SELECT id, message, link, created_at 
@@ -37,6 +53,28 @@ class Notification {
     public function markAsRead($id){
         $stmt = $this->db->prepare("UPDATE notifications SET is_read = 1 WHERE id = :id");
         return $stmt->execute([':id' => $id]);
+    }
+
+    public function markAllAsRead($userId){
+        $stmt = $this->db->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = :user");
+        return $stmt->execute([':user' => $userId]);
+    }
+
+    public function delete($id, $userId){
+        $stmt = $this->db->prepare("DELETE FROM notifications WHERE id = :id AND user_id = :user");
+        return $stmt->execute([':id' => $id, ':user' => $userId]);
+    }
+
+   
+    public function deleteAllRead($userId){
+        $stmt = $this->db->prepare("DELETE FROM notifications WHERE user_id = :user AND is_read = 1");
+        return $stmt->execute([':user' => $userId]);
+    }
+
+    
+    public function deleteAll($userId){
+        $stmt = $this->db->prepare("DELETE FROM notifications WHERE user_id = :user");
+        return $stmt->execute([':user' => $userId]);
     }
 
     public function countByUser($userId){
