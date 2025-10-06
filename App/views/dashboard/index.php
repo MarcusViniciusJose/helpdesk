@@ -19,6 +19,37 @@ function getPriorityBadge($priority) {
     ];
     return $badges[$priority] ?? '<span class="badge bg-secondary">' . htmlspecialchars($priority) . '</span>';
 }
+
+function formatarDataPtBr($data) {
+    $timestamp = strtotime($data);
+    $meses = [
+        1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',
+        5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto',
+        9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro'
+    ];
+    
+    $dia = date('d', $timestamp);
+    $mes = $meses[(int)date('m', $timestamp)];
+    $ano = date('Y', $timestamp);
+    
+    return "$dia de $mes de $ano";
+}
+
+function diaDaSemana($data) {
+    $dias = [
+        'Sunday' => 'Dom',
+        'Monday' => 'Seg',
+        'Tuesday' => 'Ter',
+        'Wednesday' => 'Qua',
+        'Thursday' => 'Qui',
+        'Friday' => 'Sex',
+        'Saturday' => 'Sáb'
+    ];
+    
+    $diaIngles = date('l', strtotime($data));
+    return $dias[$diaIngles] ?? '';
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -85,7 +116,7 @@ function getPriorityBadge($priority) {
         <div class="text-end">
             <div class="text-muted small">
                 <i class="bi bi-calendar3 me-1"></i>
-                <?= strftime('%d de %B de %Y', strtotime('now')) ?>
+                <?= formatarDataPtBr(date('Y-m-d')) ?>
             </div>
             <div class="text-muted small">
                 <i class="bi bi-clock me-1"></i>
@@ -263,8 +294,8 @@ function getPriorityBadge($priority) {
                                     <?php $saldo = $day['abertos'] - $day['fechados']; ?>
                                     <tr>
                                         <td>
-                                            <strong><?= strftime('%d/%m', strtotime($day['data'])) ?></strong>
-                                            <small class="text-muted ms-1"><?= strftime('%a', strtotime($day['data'])) ?></small>
+                                            <strong><?= date('d/m', strtotime($day['data'])) ?></strong>
+                                            <small class="text-muted ms-1"><?= diaDaSemana($day['data']) ?></small>
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-primary"><?= $day['abertos'] ?></span>
