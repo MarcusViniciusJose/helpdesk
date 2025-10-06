@@ -129,7 +129,7 @@ function diaDaSemana($data) {
     
     <div class="row g-3 mb-4">
         <div class="col-lg-3 col-md-6">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card shadow-sm border-0 h-100" style="background: #2996f0b1;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="flex-grow-1">
@@ -146,7 +146,7 @@ function diaDaSemana($data) {
         </div>
 
         <div class="col-lg-3 col-md-6">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card shadow-sm border-0 h-100" style="background: #4030f0b8;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="flex-grow-1">
@@ -163,7 +163,7 @@ function diaDaSemana($data) {
         </div>
 
         <div class="col-lg-3 col-md-6">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <div class="card shadow-sm border-0 h-100" style="background: #ef391dc6;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="flex-grow-1">
@@ -180,7 +180,7 @@ function diaDaSemana($data) {
         </div>
 
         <div class="col-lg-3 col-md-6">
-            <div class="card shadow-sm border-0 h-100" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+            <div class="card shadow-sm border-0 h-100" style="background: #f0601dbb;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <div class="flex-grow-1">
@@ -286,7 +286,6 @@ function diaDaSemana($data) {
                                         <th>Data</th>
                                         <th class="text-center">Abertos</th>
                                         <th class="text-center">Fechados</th>
-                                        <th class="text-center">Saldo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -302,15 +301,6 @@ function diaDaSemana($data) {
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-success"><?= $day['fechados'] ?></span>
-                                        </td>
-                                        <td class="text-center">
-                                            <?php if ($saldo > 0): ?>
-                                                <span class="badge bg-danger">+<?= $saldo ?></span>
-                                            <?php elseif ($saldo < 0): ?>
-                                                <span class="badge bg-success"><?= $saldo ?></span>
-                                            <?php else: ?>
-                                                <span class="badge bg-secondary">0</span>
-                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
