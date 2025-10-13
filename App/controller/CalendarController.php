@@ -13,13 +13,20 @@ class CalendarController{
         Auth::requireLogin();
 
         $user = Auth::user();
-        if(!in_array($user['role'], ['ti,admin'])){
+        if(!in_array($user['role'], ['ti','admin'])){
             $_SESSION['error'] = 'Acesso negado. Apenas membros da Equipe de TI podem acessar o calendário.';
-            header('Location: ' . BASE_URL . '/?URL=dashboard/index');
+            header('Location: ' . BASE_URL . '/?url=dashboard/index');
             exit; 
         }
 
         $this->eventModel = new CalendarEvent();
+    }
+
+    public function index(){
+        $user = Auth::user();
+        $teamMenbers = $this->eventModel->getTeamMembers();
+
+        require_once __DIR__ . '/../views/calendar/index.php';
     }
 
     public function getEvents(){
@@ -69,7 +76,7 @@ class CalendarController{
         $user = Auth::user();
 
         $data = [
-            'user_id' => $user['user_id'],
+            'user_id' => $user['id'],
             'title' => trim($_POST['title'] ?? ''),
             'description' => trim($_POST['description'] ?? ''),
             'start_date' => $_POST['start_date'] ?? '',
@@ -78,7 +85,7 @@ class CalendarController{
             'color' => $_POST['color'] ?? '#0d6efd',
             'location' => trim($_POST['location'] ?? ''), 
             'event_type' => $_POST['event_type'] ?? 'task',
-            'status' => $_POST['status'] ?? 'peding',
+            'status' => $_POST['status'] ?? 'peding'
         ];
 
         if(empty($data['title']) || empty($data['start_date']) || empty($data['end_date'])){
@@ -95,7 +102,122 @@ class CalendarController{
     }
 
     public function update(){
-        
+        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+            header('Location: ' . BASE_URL . '/?url=calendar/index');
+            return;
+        }
+
+        $id = $_POST['id'] ?? null;
+        $user = Auth::user();
+
+        if(!$id){
+            $_SESSION['error'] = 'Evento não encontrado';
+            header('Location: ' . BASE_URL . '/?url=calendar/index' );
+            return;
+        }
+
+        if(!$this->eventModel->isOwner($id, $user['id']) && $user['role'] !== 'admin'){
+            $_SESSION['error'] = 'Você não tem permissão para alterar esse evento';
+            header('Location: ' . BASE_URL . '/?url=calendar/index');
+            return;
+        }
+
+        $data = [
+            'title' => trim($_POST['title'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+            'start_date' => $_POST['start_date'] ?? '',
+            'end_date' => $_POST['end_date'] ?? '',
+            'all_day' => isset($_POST['all_day']) ? 1 : 0,
+            'color' => $_POST['color'] ?? '#0d6efd',
+            'location' => trim($_POST['location'] ?? ''), 
+            'event_type' => $_POST['event_type'] ?? 'task',
+            'status' => $_POST['status'] ?? 'peding'
+        ];
+        $this->eventModel->update($id, $data);
+
+        $_SESSION['success'] = 'Evento alterado com sucesso.';
+        header('Location: ' . BASE_URL . '/?url=calendar/index');
+        exit; 
     }
+
+    public function updateDates(){
+        header('Content-Type: application/json');
+
+        if($_SERVER['REQUEST_METHOD'] !== 'POST'){
+            echo json_encode(['success' => false]);
+            return;
+        }
+
+        $id = $_POST['id'] ?? null;
+        $startDate = $_POST['start_date'] ?? null;
+        $endDate = $_POST['end_date'] ?? null;
+        $user = Auth::user();
+
+        if(!$id || !$startDate || !$endDate){
+            echo json_encode(['success' => false, 'message' => 'Dados inválidos']);
+            return;
+        }
+
+        if(!$this->eventModel->isOwner($id,$user['id']) &&  $user['role'] !== 'admin'){
+            echo json_encode(['success' => false, 'message' => 'Sem permissão']);
+            return;
+        }
+
+        $success = $this->eventModel->updateDates($id, $startDate, $endDate);
+        echo json_encode(['success' => $success]);
+        
+
+    }
+
+    public function complete(){
+        header('Content-Type: application/json');
+
+        $id = $_POST['id'] ?? null;
+        $user = Auth::user();
+
+        if(!$id){
+            echo json_encode(['success' => false]);
+            return;
+        }   
+
+        if(!$this->eventModel->isOwner($id, $user['id']) && $user['role'] !== 'admin'){
+            echo json_encode(['success' => false, 'message' => 'Sem permissão']);
+            return;
+        }
+
+        $success = $this->eventModel->updateStatus($id, 'completed');
+        echo json_encode(['success' => $success]);
+
+    }
+
+    public function delete(){
+        if($_SERVER['REQUEST_METHOD'] !== 'POST' ){
+            header('Location: ' . BASE_URL . '/?url=calendar/index');
+            return;
+        }
+        
+        $id = $_POST['id'] ?? null;
+        $user = Auth::user();
+
+        if(!$id){
+            $_SESSION['error'] = 'Evento não encontrado';
+            header('Location: ' . BASE_URL . '/?url=calendar/index');
+            return;
+        }
+        
+        if(!$this->eventModel->isOwner($id, $user['id']) && $user['role'] !== 'admin'){
+            $_SESSION['error'] = 'Você não tem permissão para excluir este evento';
+            header('Location: ' . BASE_URL . '/?url=calendar/index');
+            return;
+        }
+
+        $this->eventModel->delete($id);
+
+        $_SESSION['success'] = 'Evento deletado com sucesso';
+        header('Location: ' . BASE_URL . '/?url=calendar/index');
+        exit;
+    }
+
+
 }
 

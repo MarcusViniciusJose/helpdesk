@@ -210,7 +210,15 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
                                     </a>
                                 </li>
                                 <?php endif; ?>
-                                
+
+                                <?php if ($isAdminOrTI): ?>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="<?= BASE_URL ?>/?url=calendar/index">
+                                            <i class="bi bi-calendar-event me-2"></i>Agenda
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+                                    
                                 <li class="nav-item">
                                     <a class="nav-link position-relative" href="<?= BASE_URL ?>/?url=notification/history">
                                         <i class="bi bi-bell me-2"></i>Notificações

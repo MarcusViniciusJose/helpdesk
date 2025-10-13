@@ -1,5 +1,5 @@
 <?php
-
+require_once __DIR__ . '/../core/Database.php';
 require_once __DIR__ . '/../../config/config.php';
 
 class CalendarEvent{
@@ -26,14 +26,14 @@ class CalendarEvent{
             ':color' => $data['color'] ?? '#0d6efd',
             ':location' => $data['location'] ?? null,
             ':event_type' => $data['event_type'] ?? 'task',
-            ':status' => $data['status'] ?? 'peding',
+            ':status' => $data['status'] ?? 'pending',
         ]);
         return $this->db->lastInsertId();
     }
 
     public function getByUser($userId){
         $sql = "SELECT e.*, u.name as user_name FROM calendar_events e JOIN users u ON u.id = e.user_id 
-        WHERE e.user_id = :user_id";
+        WHERE e.user_id = :user_id ORDER BY e.start_date ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':user_id' => $userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -41,15 +41,15 @@ class CalendarEvent{
 
     public function getTeamEvents(){
         $sql = "SELECT e.*, u.name as user_name FROM calendar_events e JOIN users u ON u.id = e.user_id
-        WHERE u.role in ('ti', 'admin') ORDER BY e.start_data ASC";
+        WHERE u.role IN ('ti', 'admin') ORDER BY e.start_date ASC";
 
-        $stmt = $this->db->prepare($sql);
+        $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getById($id){
         $sql = "SELECT e.*, u.name AS user_name
-        FROM calendar_events e JOIN users u ON u.id = u.users_id
+        FROM calendar_events e JOIN users u ON u.id = e.user_id
         WHERE e.id = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -60,20 +60,20 @@ class CalendarEvent{
 
     public function update($id, $data){
         $sql = "UPDATE calendar_events SET 
-            'title' => ':title',
-            'description' => ':description',
-            'start_date' => ':start_date',
-            'end_date' => ':end_date',
-            'all_day' => ':all_day',
-            'color' => ':color',
-            'location' => ':location',
-            'event_type' => ':event_type',
-            'status' => ':status',
+            title = :title,
+            description = :description,
+            start_date = :start_date,
+            end_date = :end_date,
+            all_day = :all_day,
+            color = :color,
+            location = :location,
+            event_type = :event_type,
+            status = :status,
             updated_at = NOW()
             WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
+        return $stmt->execute([
             'id' => $id,
             ':title' => $data['title'],
             ':description' => $data['description'] ?? null,
@@ -83,7 +83,7 @@ class CalendarEvent{
             ':color' => $data['color'] ?? '#0d6efd',
             ':location' => $data['location'] ?? null,
             ':event_type' => $data['event_type'] ?? 'task',
-            ':status' => $data['status'] ?? 'peding',
+            ':status' => $data['status'] ?? 'pending',
         ]);
     }
 
