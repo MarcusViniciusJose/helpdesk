@@ -8,7 +8,7 @@
         
         <?php if (!empty($notifications)): ?>
         <div class="btn-group">
-            <button type="button" class="btn btn-outline-primary btn-sm" onclick="markAllAsRead()">
+            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#markAllReadModal">
                 <i class="bi bi-check-all me-1"></i>Marcar todas como lidas
             </button>
             <button type="button" class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#deleteReadModal">
@@ -90,7 +90,7 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
-                                    Tem certeza que deseja excluir esta notificação?
+                                    <p class="mb-0">Tem certeza que deseja excluir esta notificação?</p>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -111,21 +111,85 @@
     </div>
 </div>
 
+<div class="modal fade" id="markAllReadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle me-2"></i>Marcar Todas Como Lidas
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-check-all text-primary fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2">Deseja marcar todas as notificações como lidas?</h6>
+                        <p class="text-muted small mb-0">
+                            Todas as suas notificações não lidas serão marcadas como visualizadas. 
+                            Você ainda poderá acessá-las normalmente no histórico.
+                        </p>
+                    </div>
+                </div>
+                
+                <?php 
+                $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
+                if ($unreadCount > 0): 
+                ?>
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong><?= $unreadCount ?></strong> notificação(ões) não lida(s) serão marcadas como lidas.
+                </div>
+                <?php endif; ?>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmMarkAllAsRead()">
+                    <i class="bi bi-check-all me-1"></i>Marcar Como Lidas
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="deleteReadModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title">
+            <div class="modal-header bg-warning bg-opacity-10 border-bottom">
+                <h5 class="modal-title text-warning">
                     <i class="bi bi-exclamation-triangle me-2"></i>Excluir Notificações Lidas
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Tem certeza que deseja excluir todas as notificações já lidas?</p>
-                <p class="text-muted small mb-0">Esta ação não pode ser desfeita.</p>
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-trash text-warning fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2">Tem certeza que deseja excluir todas as notificações lidas?</h6>
+                        <p class="text-muted small mb-0">
+                            Esta ação removerá permanentemente todas as notificações que já foram visualizadas.
+                        </p>
+                    </div>
+                </div>
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita.
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                </button>
                 <form method="post" action="<?= BASE_URL ?>/?url=notification/deleteAllRead" class="d-inline">
                     <button type="submit" class="btn btn-warning">
                         <i class="bi bi-trash me-1"></i>Excluir Lidas
@@ -146,11 +210,29 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p><strong>Atenção!</strong> Esta ação excluirá TODAS as suas notificações, incluindo as não lidas.</p>
-                <p class="text-muted small mb-0">Esta ação não pode ser desfeita.</p>
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div class="flex-shrink-0">
+                        <div class="bg-danger bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-trash-fill text-danger fs-3"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2">Tem certeza que deseja excluir TODAS as notificações?</h6>
+                        <p class="text-muted small mb-0">
+                            Esta ação removerá permanentemente todas as suas notificações, 
+                            <strong>incluindo as não lidas</strong>.
+                        </p>
+                    </div>
+                </div>
+                <div class="alert alert-danger mb-0">
+                    <i class="bi bi-exclamation-octagon me-2"></i>
+                    <strong>ATENÇÃO:</strong> Esta ação é irreversível e apagará todo o histórico de notificações.
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                </button>
                 <form method="post" action="<?= BASE_URL ?>/?url=notification/deleteAll" class="d-inline">
                     <button type="submit" class="btn btn-danger">
                         <i class="bi bi-trash-fill me-1"></i>Excluir Todas
@@ -172,21 +254,28 @@ function markAsRead(id) {
     });
 }
 
-function markAllAsRead() {
-    if (confirm('Marcar todas as notificações como lidas?')) {
-        fetch('<?= BASE_URL ?>/?url=notification/markAllAsRead', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.reload();
-            }
-        });
-    }
+function confirmMarkAllAsRead() {
+    fetch('<?= BASE_URL ?>/?url=notification/markAllAsRead', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('markAllReadModal'));
+            modal.hide();
+            
+            window.location.reload();
+        } else {
+            alert('Erro ao marcar notificações como lidas');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao processar requisição');
+    });
 }
 </script>
 

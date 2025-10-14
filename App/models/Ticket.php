@@ -138,7 +138,7 @@ class Ticket {
     }
 
     public function delete($id){
-        $stmt = $this->db->prepare("DELETE FROM tickets_comments WHERE ticket_id = :id");
+        $stmt = $this->db->prepare("DELETE FROM ticket_comments WHERE ticket_id = :id");
         $stmt->execute([':id' => $id]);
         
         $stmt = $this->db->prepare("DELETE FROM tickets WHERE id = :id");

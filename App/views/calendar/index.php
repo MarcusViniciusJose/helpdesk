@@ -248,6 +248,7 @@ $isAdmin = $user['role'] === 'admin';
 <script>
 let calendar;
 let currentEvent = null;
+let currentFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
@@ -272,7 +273,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const userId = document.getElementById('userFilter')?.value || '';
             fetch('<?= BASE_URL ?>/?url=calendar/getEvents&user_id=' + userId)
                 .then(response => response.json())
-                .then(data => successCallback(data))
+                .then(data => {
+                    let filteredData = data;
+                    if (currentFilter !== 'all') {
+                        filteredData = data.filter(event => 
+                            event.extendedProps.event_type === currentFilter
+                        );
+                    }
+                    successCallback(filteredData);
+                })
                 .catch(error => failureCallback(error));
         },
         editable: true,
@@ -288,10 +297,30 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         dateClick: function(info) {
             openEventModal(info.date);
+        },
+        eventClassNames: function(arg) {
+            if (arg.event.extendedProps.status === 'completed') {
+                return ['completed'];
+            }
+            return [];
         }
     });
     
     calendar.render();
+
+    document.querySelectorAll('[data-filter]').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('[data-filter]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            this.classList.add('active');
+            
+            currentFilter = this.dataset.filter;
+            
+            calendar.refetchEvents();
+        });
+    });
 
     document.querySelectorAll('.color-option').forEach(option => {
         option.addEventListener('click', function() {
@@ -312,6 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteEvent(currentEvent.id);
         }
     });
+
     document.getElementById('completeEventBtn').addEventListener('click', function() {
         if (currentEvent) {
             completeEvent(currentEvent.id);
