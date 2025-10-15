@@ -233,11 +233,6 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
                     
                     <ul class="nav flex-column mb-3">
                         <li class="nav-item">
-                            <a class="nav-link" href="<?= BASE_URL ?>/?url=profile/index">
-                                <i class="bi bi-person-circle me-2"></i>Meu Perfil
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-danger" href="<?= BASE_URL ?>/?url=auth/logout">
                                 <i class="bi bi-box-arrow-right me-2"></i>Sair
                             </a>

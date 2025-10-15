@@ -17,7 +17,7 @@
           <div class="alert alert-danger py-2"><?= htmlspecialchars($error) ?></div>
         <?php else: ?>
           <div class="alert alert-info py-2">
-            Use seu e-mail corporativo e a senha inicial <strong>senha123</strong> (altere depois).
+           Use seu e-mail corporativo e a senha padrão <strong>senha123</strong>.
           </div>
         <?php endif; ?>
 
