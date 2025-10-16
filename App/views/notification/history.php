@@ -122,11 +122,6 @@
             </div>
             <div class="modal-body">
                 <div class="d-flex align-items-start gap-3 mb-3">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-check-all text-primary fs-3"></i>
-                        </div>
-                    </div>
                     <div class="flex-grow-1">
                         <h6 class="mb-2">Deseja marcar todas as notificações como lidas?</h6>
                         <p class="text-muted small mb-0">
@@ -169,11 +164,6 @@
             </div>
             <div class="modal-body">
                 <div class="d-flex align-items-start gap-3 mb-3">
-                    <div class="flex-shrink-0">
-                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-trash text-warning fs-3"></i>
-                        </div>
-                    </div>
                     <div class="flex-grow-1">
                         <h6 class="mb-2">Tem certeza que deseja excluir todas as notificações lidas?</h6>
                         <p class="text-muted small mb-0">
@@ -211,11 +201,6 @@
             </div>
             <div class="modal-body">
                 <div class="d-flex align-items-start gap-3 mb-3">
-                    <div class="flex-shrink-0">
-                        <div class="bg-danger bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-trash-fill text-danger fs-3"></i>
-                        </div>
-                    </div>
                     <div class="flex-grow-1">
                         <h6 class="mb-2">Tem certeza que deseja excluir TODAS as notificações?</h6>
                         <p class="text-muted small mb-0">
