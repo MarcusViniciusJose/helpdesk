@@ -54,7 +54,6 @@ Antes de começar, certifique-se de ter instalado em sua máquina:
 - PHP 7.4 ou superior
 - MySQL 5.7 ou superior
 - Apache ou Nginx
-- Composer (gerenciador de dependências PHP)
 - Git
 
 ## 🔧 Instalação

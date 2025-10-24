@@ -22,7 +22,7 @@
   <div class="col-lg-8">
     <div class="card shadow-sm">
       <div class="card-body">
-        <form method="post" action="<?= BASE_URL ?>/?url=ticket/store">
+        <form method="post" action="<?= BASE_URL ?>/?url=ticket/store" enctype="multipart/form-data">
           <div class="mb-4">
             <label class="form-label fw-semibold">
               Título <span class="text-danger">*</span>
@@ -51,27 +51,51 @@
               Quanto mais detalhes, mais rápido conseguiremos ajudá-lo
             </small>
           </div>
+
+
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold">
+                <i class="bi bi-paperclip me-1"></i>Anexar Print ou Arquivo (Opcional)
+              </label>
+              <input type="file" 
+                    name="attachment" 
+                    class="form-control" 
+                    accept="image/*,.pdf"
+                    id="fileInput">
+              <small class="form-text text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Anexe um print da tela do erro ou documento PDF (máx. 5MB)
+              </small>
+              
+              <div id="filePreview" class="mt-3" style="display: none;">
+                <div class="alert alert-info d-flex align-items-center">
+                  <i class="bi bi-file-earmark-image fs-3 me-3"></i>
+                  <div class="flex-grow-1">
+                    <strong id="fileName"></strong>
+                    <div class="small text-muted" id="fileSize"></div>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
+                    <i class="bi bi-x-lg"></i> Remover
+                  </button>
+                </div>
+              </div>
+          </div>
           
           <div class="mb-4">
             <label class="form-label fw-semibold">Prioridade</label>
             <select name="priority" class="form-select">
-              <option value="low">
-                🟢 Baixa - Pode aguardar
-              </option>
-              <option value="medium" selected>
-                🟡 Média - Problema moderado
-              </option>
-              <option value="high">
-                🟠 Alta - Problema sério
-              </option>
-              <option value="critical">
-                🔴 Crítica - Sistema parado
-              </option>
+              <option value="low">🟢 Baixa - Pode aguardar</option>
+              <option value="medium" selected>🟡 Média - Problema moderado</option>
+              <option value="high">🟠 Alta - Problema sério</option>
+              <option value="critical">🔴 Crítica - Sistema parado</option>
             </select>
             <small class="form-text text-muted">
               Selecione a prioridade de acordo com a urgência
             </small>
           </div>
+
+
           
           <div class="d-flex gap-2">
             <button type="submit" class="btn btn-success">
@@ -97,6 +121,7 @@
           <li class="mb-2">Descreva o problema em detalhes</li>
           <li class="mb-2">Inclua mensagens de erro, se houver</li>
           <li class="mb-2">Informe quando o problema começou</li>
+          <li class="mb-2">📸 <strong>Anexe um print da tela com o erro</strong></li>
           <li>Selecione a prioridade correta</li>
         </ul>
       </div>
@@ -121,8 +146,56 @@
         </small>
       </div>
     </div>
+
+    <div class="card border-success mt-3 shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title text-success">
+          <i class="bi bi-camera me-2"></i>Como Tirar Print
+        </h6>
+        <small class="d-block mb-2">
+          <strong>Windows:</strong> <kbd>Win + Shift + S</kbd>
+        </small>
+        <small class="d-block mb-2">
+          <strong>Mac:</strong> <kbd>Cmd + Shift + 4</kbd>
+        </small>
+        <small class="d-block">
+          <strong>Celular:</strong> <kbd>Botão de volume + Power</kbd>
+        </small>
+      </div>
+    </div>
   </div>
 </div>
+
+<script>
+document.getElementById('fileInput')?.addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  const preview = document.getElementById('filePreview');
+  const fileName = document.getElementById('fileName');
+  const fileSize = document.getElementById('fileSize');
+  
+  if (file) {
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('Arquivo muito grande! Tamanho máximo: 5MB');
+      e.target.value = '';
+      preview.style.display = 'none';
+      return;
+    }
+    
+    fileName.textContent = file.name;
+    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    fileSize.textContent = `Tamanho: ${sizeMB} MB`;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+});
+
+function clearFile() {
+  document.getElementById('fileInput').value = '';
+  document.getElementById('filePreview').style.display = 'none';
+}
+</script>
 
 <?php 
 $content = ob_get_clean(); 

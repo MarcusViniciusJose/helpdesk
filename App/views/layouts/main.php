@@ -202,14 +202,6 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
                                         <i class="bi bi-ticket-perforated me-2"></i>Chamados
                                     </a>
                                 </li>
-                                
-                                <?php if ($isAdminOrTI): ?>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="<?= BASE_URL ?>/?url=user/index">
-                                        <i class="bi bi-people-fill me-2"></i>Usuários
-                                    </a>
-                                </li>
-                                <?php endif; ?>
 
                                 <?php if ($isAdminOrTI): ?>
                                     <li class="nav-item">
@@ -217,6 +209,14 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
                                             <i class="bi bi-calendar-event me-2"></i>Agenda
                                         </a>
                                     </li>
+                                <?php endif; ?>
+
+                                <?php if ($isAdminOrTI): ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="<?= BASE_URL ?>/?url=user/index">
+                                        <i class="bi bi-people-fill me-2"></i>Usuários
+                                    </a>
+                                </li>
                                 <?php endif; ?>
                                     
                                 <li class="nav-item">
