@@ -111,8 +111,27 @@ $canEdit = $isAdminOrTI || ($ticket['requester_id'] == $user['id'] && $ticket['s
             <strong>Atribuído a:</strong> <?= htmlspecialchars($ticket['assigned_name']) ?>
           </div>
         <?php endif; ?>
+        <?php if (!empty($ticket['attachment'])): ?>
+            <div class="mt-3">
+                <strong>Arquivo enviado:</strong><br>
+                <?php 
+                    $fileUrl = BASE_URL . '/uploads/tickets/' . htmlspecialchars($ticket['attachment']);
+                    $ext = pathinfo($ticket['attachment'], PATHINFO_EXTENSION);
+                ?>
+                <?php if (in_array(strtolower($ext), ['jpg','jpeg','png','gif'])): ?>
+                    <img src="<?= $fileUrl ?>" alt="Anexo" class="img-fluid mt-2" style="max-width: 300px;">
+                <?php else: ?>
+                    <a href="<?= $fileUrl ?>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                        📎 Baixar arquivo
+                    </a>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
       </div>
     </div>
+
+    
 
     <?php if($isAdminOrTI || $ticket['requester_id'] == $user['id']): ?>
     <div class="card shadow-sm mb-4">

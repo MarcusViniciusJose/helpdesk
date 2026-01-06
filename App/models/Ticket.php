@@ -69,17 +69,19 @@ class Ticket {
 
     public function create($data){
         $st = $this->db->prepare("
-            INSERT INTO tickets (requester_id, title, description, priority, status, created_at) 
-            VALUES (:requester_id, :title, :description, :priority, 'open', NOW())
+            INSERT INTO tickets (requester_id, title, description, priority, attachment, status, created_at) 
+            VALUES (:requester_id, :title, :description, :priority, :attachment, 'open', NOW())
         ");
         $st->execute([
             ':requester_id' => $data['requester_id'],
             ':title'        => $data['title'],
             ':description'  => $data['description'],
             ':priority'     => $data['priority'],
+            ':attachment'   => $data['attachment']
         ]);
         return $this->db->lastInsertId();
     }
+
 
     public function getById($id){
         $stmt = $this->db->prepare("

@@ -28,47 +28,76 @@ class TicketController{
     }
 
     public function store(){
-        Auth::requireLogin();
+    Auth::requireLogin();
 
-        $data = [
-            'requester_id' => Auth::user()['id'],
-            'title'        => trim($_POST['title'] ?? ''),
-            'description'  => trim($_POST['description'] ?? ''),
-            'priority'     => $_POST['priority'] ?? 'medium',
-        ];
+    $data = [
+        'requester_id' => Auth::user()['id'],
+        'title'        => trim($_POST['title'] ?? ''),
+        'description'  => trim($_POST['description'] ?? ''),
+        'priority'     => $_POST['priority'] ?? 'medium',
+        'attachment'   => null, 
+    ];
 
-        if($data['title'] === '' || $data['description'] === ''){
-            $error = 'Título e descrição são obrigatórios';
+    if($data['title'] === '' || $data['description'] === ''){
+        $error = 'Título e descrição são obrigatórios';
+        require_once __DIR__ . '/../views/tickets/create.php';
+        return;
+    }
+
+    if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+        $fileTmp  = $_FILES['attachment']['tmp_name'];
+        $fileName = basename($_FILES['attachment']['name']);
+        $fileExt  = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $allowed  = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt'];
+
+        if (!in_array($fileExt, $allowed)) {
+            $error = 'Tipo de arquivo não permitido.';
             require_once __DIR__ . '/../views/tickets/create.php';
             return;
         }
 
-        $ticketId = $this->ticketModel->create($data);
-        
-        $priorityLabel = [
-            'low' => 'Baixa',
-            'medium' => 'Média',
-            'high' => 'Alta',
-            'critical' => 'CRÍTICA'
-        ][$data['priority']] ?? $data['priority'];
-        
-        $message = sprintf(
-            "Novo chamado #%d criado por %s - Prioridade: %s",
-            $ticketId,
-            Auth::user()['name'],
-            $priorityLabel
-        );
-        
-        $this->notificationModel->notifyAdminsAndTI(
-            $message,
-            BASE_URL . "/?url=ticket/show&id=" . $ticketId,
-            $ticketId
-        );
+        $newFileName = uniqid('ticket_') . '.' . $fileExt;
+        $uploadDir = __DIR__ . '/../../public/uploads/tickets/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
 
-        $_SESSION['success'] = 'Chamado criado com sucesso!';
-        header('Location: ' . BASE_URL . '/?url=ticket/show&id=' . $ticketId);
-        exit;
+        if (move_uploaded_file($fileTmp, $uploadDir . $newFileName)) {
+            $data['attachment'] = $newFileName;
+        } else {
+            $error = 'Erro ao enviar o arquivo.';
+            require_once __DIR__ . '/../views/tickets/create.php';
+            return;
+        }
     }
+
+    $ticketId = $this->ticketModel->create($data);
+    
+    $priorityLabel = [
+        'low' => 'Baixa',
+        'medium' => 'Média',
+        'high' => 'Alta',
+        'critical' => 'CRÍTICA'
+    ][$data['priority']] ?? $data['priority'];
+    
+    $message = sprintf(
+        "Novo chamado #%d criado por %s - Prioridade: %s",
+        $ticketId,
+        Auth::user()['name'],
+        $priorityLabel
+    );
+    
+    $this->notificationModel->notifyAdminsAndTI(
+        $message,
+        BASE_URL . "/?url=ticket/show&id=" . $ticketId,
+        $ticketId
+    );
+
+    $_SESSION['success'] = 'Chamado criado com sucesso!';
+    header('Location: ' . BASE_URL . '/?url=ticket/show&id=' . $ticketId);
+    exit;
+}
+
 
     public function show(){
         Auth::requireLogin();
@@ -185,6 +214,17 @@ class TicketController{
             $_SESSION['error'] = 'Você não tem permissão para excluir chamados';
             header('Location: ' . BASE_URL . '/?url=ticket/show&id=' . $id);
             return;
+        }
+        
+        $ticket = $this->ticketModel->getById($id);
+
+        if($ticket && !empty($ticket['attachment'])){
+            $filePath = __DIR__ . '/../../public/uploads/tickets/' . $ticket['attachment'];
+
+            if($filePath){
+                unlink($filePath);
+            }
+
         }
         
         $this->ticketModel->delete($id);
