@@ -102,18 +102,40 @@ function diaDaSemana($data) {
 .list-group-item:hover {
     background-color: rgba(0, 0, 0, 0.02);
 }
+
+h2, h3 {
+    font-size: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    h2 {
+        font-size: 2rem;
+    }
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.progress {
+    min-width: 80px;
+}
+
 </style>
 </head>
 <body>
-    <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h4 class="mb-1">
+    <div class="container py-3 py-md-4">
+
+    <div class="row align-items-center mb-4 g-2">
+        <div class="col-12 col-md-8">
+            <h5 class="mb-1">
                 <i class="bi bi-speedometer2 me-2"></i>Dashboard Gerencial
-            </h4>
+            </h5>
             <p class="text-muted small mb-0">Análise dos últimos 30 dias</p>
         </div>
-        <div class="text-end">
+
+        <div class="col-12 col-md-4 text-md-end text-start">
             <div class="text-muted small">
                 <i class="bi bi-calendar3 me-1"></i>
                 <?= formatarDataPtBr(date('Y-m-d')) ?>
@@ -125,10 +147,11 @@ function diaDaSemana($data) {
         </div>
     </div>
 
+
     <?php if ($isAdminOrTI && $kpis): ?>
     
     <div class="row g-3 mb-4">
-        <div class="col-lg-3 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card shadow-sm border-0 h-100" style="background: #2996f0b1;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -145,7 +168,7 @@ function diaDaSemana($data) {
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
+    <div class="col-12 col-sm-6 col-lg-3">
             <div class="card shadow-sm border-0 h-100" style="background: #4030f0b8;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -162,7 +185,7 @@ function diaDaSemana($data) {
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card shadow-sm border-0 h-100" style="background: #ef391dc6;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -179,7 +202,7 @@ function diaDaSemana($data) {
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-3">
             <div class="card shadow-sm border-0 h-100" style="background: #f0601dbb;">
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -207,19 +230,19 @@ function diaDaSemana($data) {
                 </div>
                 <div class="card-body">
                     <div class="row text-center g-3">
-                        <div class="col-4">
+                        <div class="col-12 col-sm-4">
                             <div class="p-3 bg-light rounded">
                                 <div class="fs-1 fw-bold text-primary"><?= $kpis['aguardando_atendimento'] ?></div>
                                 <div class="small text-muted mt-2">Aguardando</div>
                             </div>
                         </div>
-                        <div class="col-4">
+                        <div class="col-12 col-sm-4">
                             <div class="p-3 bg-light rounded">
                                 <div class="fs-1 fw-bold text-warning"><?= $kpis['em_atendimento'] ?></div>
                                 <div class="small text-muted mt-2">Em Atendimento</div>
                             </div>
                         </div>
-                        <div class="col-4">
+                       <div class="col-12 col-sm-4">
                             <div class="p-3 bg-light rounded">
                                 <div class="fs-1 fw-bold text-success"><?= $kpis['resolvidos'] ?></div>
                                 <div class="small text-muted mt-2">Resolvidos</div>
@@ -439,7 +462,7 @@ function diaDaSemana($data) {
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover table-sm mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 40%;">Problema</th>
@@ -513,12 +536,12 @@ function diaDaSemana($data) {
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover table-sm mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 60px;">Ranking</th>
                                     <th>Usuário</th>
-                                    <th>E-mail</th>
+                                    <th class="d-none d-md-table-cell">E-mail</th>
                                     <th class="text-center">Total</th>
                                     <th class="text-center">Abertos</th>
                                     <th class="text-center">Em Andamento</th>
@@ -550,8 +573,8 @@ function diaDaSemana($data) {
                                         <i class="bi bi-person-circle me-2 text-primary"></i>
                                         <strong><?= htmlspecialchars($requester['name']) ?></strong>
                                     </td>
-                                    <td>
-                                        <small class="text-muted"><?= htmlspecialchars($requester['email']) ?></small>
+                                    <td class="d-none d-md-table-cell">
+                                        <?= htmlspecialchars($requester['email']) ?>
                                     </td>
                                     <td class="text-center">
                                         <span class="badge bg-primary rounded-pill fs-6 px-3"><?= $requester['total_chamados'] ?></span>
@@ -663,12 +686,14 @@ function diaDaSemana($data) {
                     <p class="text-muted">
                         Você tem <?= $stats['total'] ?> chamado(s) registrado(s) no sistema.
                     </p>
-                    <a href="<?= BASE_URL ?>/?url=ticket/index" class="btn btn-primary">
-                        <i class="bi bi-list-ul me-2"></i>Ver Meus Chamados
-                    </a>
-                    <a href="<?= BASE_URL ?>/?url=ticket/create" class="btn btn-success">
-                        <i class="bi bi-plus-circle me-2"></i>Abrir Novo Chamado
-                    </a>
+                    <div class="d-grid d-md-flex gap-2 justify-content-center">
+                        <a href="<?= BASE_URL ?>/?url=ticket/index" class="btn btn-primary">
+                            <i class="bi bi-list-ul me-2"></i>Ver Meus Chamados
+                        </a>
+                        <a href="<?= BASE_URL ?>/?url=ticket/create" class="btn btn-success">
+                            <i class="bi bi-plus-circle me-2"></i>Abrir Novo Chamado
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

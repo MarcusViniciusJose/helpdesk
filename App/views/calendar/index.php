@@ -56,17 +56,36 @@ $isAdmin = $user['role'] === 'admin';
     border-radius: 50%;
     background: #f8f9fa;
 }
+
+@media (max-width: 767px) {
+    #calendar {
+        padding: 1rem;
+    }
+
+    .fc-toolbar {
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+}
+
 </style>
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-3 py-md-4">
+    <div class="d-flex flex-column flex-md-row 
+            justify-content-between align-items-start align-items-md-center 
+            gap-3 mb-4">
         <div>
             <h3 class="mb-1">
                 <i class="bi bi-calendar-event me-2"></i>Agenda da Equipe TI
             </h3>
             <p class="text-muted mb-0 small">Gerencie suas tarefas e compromissos</p>
         </div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#eventModal">
+        <button class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#eventModal">
             <i class="bi bi-plus-circle me-2"></i>Novo Evento
         </button>
     </div>
@@ -89,7 +108,7 @@ $isAdmin = $user['role'] === 'admin';
 
     <div class="calendar-controls">
         <div class="row align-items-center">
-            <div class="col-md-6">
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
                 <h6 class="mb-2">Filtros</h6>
                 <div class="d-flex gap-2 flex-wrap">
                     <button class="btn btn-sm btn-outline-primary active" data-filter="all">
@@ -108,7 +127,7 @@ $isAdmin = $user['role'] === 'admin';
             </div>
             
             <?php if ($isAdmin): ?>
-            <div class="col-md-6 text-end">
+            <div class="col-12 col-md-6 text-start text-md-end">
                 <h6 class="mb-2">Visualizar Agenda de:</h6>
                 <select class="form-select form-select-sm d-inline-block w-auto" id="userFilter">
                     <option value="">Todos da Equipe</option>
@@ -127,7 +146,7 @@ $isAdmin = $user['role'] === 'admin';
 </div>
 
 <div class="modal fade" id="eventModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-fullscreen-sm-down modal-lg">
         <div class="modal-content">
             <form id="eventForm" method="post" action="<?= BASE_URL ?>/?url=calendar/store">
                 <div class="modal-header">
@@ -145,11 +164,11 @@ $isAdmin = $user['role'] === 'admin';
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Data/Hora Início <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control" name="start_date" id="eventStart" required>
+                            <input type="datetime-local" class="form-control form-control-lg"" name="start_date" id="eventStart" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Data/Hora Fim <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control" name="end_date" id="eventEnd" required>
+                            <input type="datetime-local" class="form-control form-control-lg"" name="end_date" id="eventEnd" required>
                         </div>
                     </div>
 
@@ -254,12 +273,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
     
     calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
+        initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
         locale: 'pt-br',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+       headerToolbar: {
+                left: 'prev,next',
+                center: 'title',
+                right: window.innerWidth < 768 
+                ? 'listWeek' 
+                : 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
         buttonText: {
             today: 'Hoje',
