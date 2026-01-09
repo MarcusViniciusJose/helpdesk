@@ -7,14 +7,15 @@ $isAdmin = $user['role'] === 'admin';
 <style>
 #calendar {
     background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
+    border-radius: 8px;
+    padding: 0.75rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .fc-event {
     cursor: pointer;
     border-radius: 4px;
+    font-size: 0.875rem;
 }
 
 .fc-event.completed {
@@ -24,19 +25,20 @@ $isAdmin = $user['role'] === 'admin';
 
 .calendar-controls {
     background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
+    border-radius: 8px;
+    padding: 1rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .color-option {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     cursor: pointer;
     border: 3px solid transparent;
     transition: all 0.2s;
+    flex-shrink: 0;
 }
 
 .color-option:hover {
@@ -45,6 +47,7 @@ $isAdmin = $user['role'] === 'admin';
 
 .color-option.selected {
     border-color: #212529;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #212529;
 }
 
 .event-type-icon {
@@ -55,37 +58,235 @@ $isAdmin = $user['role'] === 'admin';
     height: 32px;
     border-radius: 50%;
     background: #f8f9fa;
+    flex-shrink: 0;
 }
 
-@media (max-width: 767px) {
+.page-header {
+    margin-bottom: 1rem;
+}
+
+.page-header h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.btn-new-event {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.filter-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.filter-buttons .btn {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.calendar-controls .row {
+    gap: 1rem;
+}
+
+.form-control,
+.form-select {
+    font-size: 16px; 
+    padding: 0.75rem;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.color-picker-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.modal-body {
+    padding: 1rem;
+}
+
+.modal-header {
+    padding: 1rem;
+}
+
+.modal-footer {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.modal-footer .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+.alert {
+    border-radius: 8px;
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+}
+
+.fc-toolbar {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+}
+
+.fc-toolbar-title {
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.fc-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.fc-header-toolbar {
+    margin-bottom: 1rem;
+}
+
+.fc-list-event {
+    padding: 0.75rem;
+}
+
+.fc-list-event-title {
+    font-size: 0.875rem;
+}
+
+.event-detail-item {
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+}
+
+.event-detail-item h6 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.event-detail-item p {
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.btn {
+    min-height: 44px;
+    touch-action: manipulation;
+}
+
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+@media (min-width: 768px) {
     #calendar {
-        padding: 1rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .calendar-controls {
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+    }
+
+    .page-header h3 {
+        font-size: 1.75rem;
+    }
+
+    .btn-new-event {
+        width: auto;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .filter-buttons {
+        display: flex;
+        grid-template-columns: none;
+        flex-wrap: wrap;
+    }
+
+    .filter-buttons .btn {
+        padding: 0.375rem 1rem;
     }
 
     .fc-toolbar {
-        flex-direction: column;
-        gap: .5rem;
+        flex-direction: row;
+        gap: 0;
     }
 
     .fc-toolbar-title {
-        font-size: 1.1rem;
-        text-align: center;
+        font-size: 1.5rem;
+    }
+
+    .fc-button {
+        padding: 0.4rem 0.65rem;
+        font-size: 1rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer .btn {
+        flex: initial;
+    }
+
+    .color-option {
+        width: 30px;
+        height: 30px;
     }
 }
 
+@media (min-width: 992px) {
+    .page-header h3 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 575px) {
+    .fc-daygrid-day-number {
+        font-size: 0.875rem;
+        padding: 0.5rem;
+    }
+
+    .fc-col-header-cell {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.25rem;
+    }
+}
 </style>
 
-<div class="container py-3 py-md-4">
-    <div class="d-flex flex-column flex-md-row 
-            justify-content-between align-items-start align-items-md-center 
-            gap-3 mb-4">
+<div class="container-fluid px-3 px-md-4 py-3 py-md-4">
+    <div class="page-header d-flex flex-column flex-md-row 
+                justify-content-between align-items-start align-items-md-center 
+                gap-2 gap-md-3 mb-3 mb-md-4">
         <div>
             <h3 class="mb-1">
                 <i class="bi bi-calendar-event me-2"></i>Agenda da Equipe TI
             </h3>
             <p class="text-muted mb-0 small">Gerencie suas tarefas e compromissos</p>
         </div>
-        <button class="btn btn-primary w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#eventModal">
+        <button class="btn btn-primary btn-new-event" data-bs-toggle="modal" data-bs-target="#eventModal">
             <i class="bi bi-plus-circle me-2"></i>Novo Evento
         </button>
     </div>
@@ -107,12 +308,12 @@ $isAdmin = $user['role'] === 'admin';
     <?php endif; ?>
 
     <div class="calendar-controls">
-        <div class="row align-items-center">
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-                <h6 class="mb-2">Filtros</h6>
-                <div class="d-flex gap-2 flex-wrap">
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <h6 class="mb-2 fw-semibold">Filtros</h6>
+                <div class="filter-buttons">
                     <button class="btn btn-sm btn-outline-primary active" data-filter="all">
-                        Todos
+                        <i class="bi bi-grid me-1 d-none d-md-inline"></i>Todos
                     </button>
                     <button class="btn btn-sm btn-outline-info" data-filter="task">
                         <i class="bi bi-check-square me-1"></i>Tarefas
@@ -127,9 +328,9 @@ $isAdmin = $user['role'] === 'admin';
             </div>
             
             <?php if ($isAdmin): ?>
-            <div class="col-12 col-md-6 text-start text-md-end">
-                <h6 class="mb-2">Visualizar Agenda de:</h6>
-                <select class="form-select form-select-sm d-inline-block w-auto" id="userFilter">
+            <div class="col-12 col-md-6">
+                <h6 class="mb-2 fw-semibold">Visualizar Agenda de:</h6>
+                <select class="form-select form-select-sm" id="userFilter">
                     <option value="">Todos da Equipe</option>
                     <?php foreach ($teamMembers as $member): ?>
                     <option value="<?= $member['id'] ?>" <?= $member['id'] == $user['id'] ? 'selected' : '' ?>>
@@ -157,24 +358,34 @@ $isAdmin = $user['role'] === 'admin';
                     <input type="hidden" name="id" id="eventId">
                     
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Título <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" name="title" id="eventTitle" required>
+                        <label class="form-label fw-semibold">
+                            Título <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="title" id="eventTitle" 
+                               placeholder="Ex: Reunião de projeto" required>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Data/Hora Início <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control form-control-lg"" name="start_date" id="eventStart" required>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">
+                                Data/Hora Início <span class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" 
+                                   name="start_date" id="eventStart" required>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">Data/Hora Fim <span class="text-danger">*</span></label>
-                            <input type="datetime-local" class="form-control form-control-lg"" name="end_date" id="eventEnd" required>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-semibold">
+                                Data/Hora Fim <span class="text-danger">*</span>
+                            </label>
+                            <input type="datetime-local" class="form-control" 
+                                   name="end_date" id="eventEnd" required>
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3 mt-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="all_day" id="eventAllDay">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="all_day" id="eventAllDay">
                             <label class="form-check-label" for="eventAllDay">
                                 Dia inteiro
                             </label>
@@ -193,25 +404,27 @@ $isAdmin = $user['role'] === 'admin';
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Descrição</label>
-                        <textarea class="form-control" name="description" id="eventDescription" rows="3"></textarea>
+                        <textarea class="form-control" name="description" id="eventDescription" 
+                                  rows="3" placeholder="Descreva os detalhes do evento..."></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Local</label>
-                        <input type="text" class="form-control" name="location" id="eventLocation" placeholder="Ex: Sala de Reuniões, Online, etc.">
+                        <input type="text" class="form-control" name="location" id="eventLocation" 
+                               placeholder="Ex: Sala de Reuniões, Online, etc.">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold d-block">Cor</label>
-                        <div class="d-flex gap-2">
-                            <div class="color-option selected" data-color="#0d6efd" style="background: #0d6efd;"></div>
-                            <div class="color-option" data-color="#198754" style="background: #198754;"></div>
-                            <div class="color-option" data-color="#ffc107" style="background: #ffc107;"></div>
-                            <div class="color-option" data-color="#dc3545" style="background: #dc3545;"></div>
-                            <div class="color-option" data-color="#6610f2" style="background: #6610f2;"></div>
-                            <div class="color-option" data-color="#fd7e14" style="background: #fd7e14;"></div>
-                            <div class="color-option" data-color="#20c997" style="background: #20c997;"></div>
-                            <div class="color-option" data-color="#6c757d" style="background: #6c757d;"></div>
+                        <label class="form-label fw-semibold d-block">Cor do Evento</label>
+                        <div class="color-picker-wrapper">
+                            <div class="color-option selected" data-color="#0d6efd" style="background: #0d6efd;" title="Azul"></div>
+                            <div class="color-option" data-color="#198754" style="background: #198754;" title="Verde"></div>
+                            <div class="color-option" data-color="#ffc107" style="background: #ffc107;" title="Amarelo"></div>
+                            <div class="color-option" data-color="#dc3545" style="background: #dc3545;" title="Vermelho"></div>
+                            <div class="color-option" data-color="#6610f2" style="background: #6610f2;" title="Roxo"></div>
+                            <div class="color-option" data-color="#fd7e14" style="background: #fd7e14;" title="Laranja"></div>
+                            <div class="color-option" data-color="#20c997" style="background: #20c997;" title="Turquesa"></div>
+                            <div class="color-option" data-color="#6c757d" style="background: #6c757d;" title="Cinza"></div>
                         </div>
                         <input type="hidden" name="color" id="eventColor" value="#0d6efd">
                     </div>
@@ -230,7 +443,9 @@ $isAdmin = $user['role'] === 'admin';
                         <i class="bi bi-trash me-1"></i>Excluir
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Salvar
+                    </button>
                 </div>
             </form>
         </div>
@@ -238,20 +453,19 @@ $isAdmin = $user['role'] === 'admin';
 </div>
 
 <div class="modal fade" id="viewEventModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="viewEventTitle"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="viewEventContent">
-
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success btn-sm" id="completeEventBtn">
-                    <i class="bi bi-check-circle me-1"></i>Marcar como Concluído
+                <button type="button" class="btn btn-success" id="completeEventBtn">
+                    <i class="bi bi-check-circle me-1"></i>Concluir
                 </button>
-                <button type="button" class="btn btn-primary btn-sm" id="editEventBtn">
+                <button type="button" class="btn btn-primary" id="editEventBtn">
                     <i class="bi bi-pencil me-1"></i>Editar
                 </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -271,15 +485,17 @@ let currentFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
+    const isMobile = window.innerWidth < 768;
+    const initialView = isMobile ? 'listWeek' : 'dayGridMonth';
     
     calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+        initialView: initialView,
         locale: 'pt-br',
-       headerToolbar: {
-                left: 'prev,next',
-                center: 'title',
-                right: window.innerWidth < 768 
-                ? 'listWeek' 
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: isMobile 
+                ? 'dayGridMonth,listWeek' 
                 : 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
         },
         buttonText: {
@@ -308,6 +524,7 @@ document.addEventListener('DOMContentLoaded', function() {
         editable: true,
         droppable: true,
         eventClick: function(info) {
+            info.jsEvent.preventDefault();
             showEventDetails(info.event);
         },
         eventDrop: function(info) {
@@ -324,6 +541,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 return ['completed'];
             }
             return [];
+        },
+        windowResize: function(view) {
+            if (window.innerWidth < 768) {
+                calendar.changeView('listWeek');
+            }
         }
     });
     
@@ -336,9 +558,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             this.classList.add('active');
-            
             currentFilter = this.dataset.filter;
-            
             calendar.refetchEvents();
         });
     });
@@ -373,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentEvent) {
             const modal = bootstrap.Modal.getInstance(document.getElementById('viewEventModal'));
             modal.hide();
-            editEvent(currentEvent);
+            setTimeout(() => editEvent(currentEvent), 200);
         }
     });
 });
@@ -429,7 +649,6 @@ function editEvent(event) {
 
 function showEventDetails(event) {
     currentEvent = event;
-    
     const props = event.extendedProps;
     
     const typeIcons = {
@@ -453,7 +672,7 @@ function showEventDetails(event) {
     };
     
     let content = `
-        <div class="mb-3">
+        <div class="event-detail-item">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="event-type-icon">
                     <i class="bi bi-${typeIcons[props.event_type] || 'calendar-event'}"></i>
@@ -463,9 +682,9 @@ function showEventDetails(event) {
             </div>
         </div>
         
-        <div class="mb-3">
-            <h6 class="text-muted small mb-1">Período</h6>
-            <p class="mb-0">
+        <div class="event-detail-item">
+            <h6>Período</h6>
+            <p>
                 <i class="bi bi-calendar me-2"></i>
                 ${formatDateTime(event.start)} 
                 ${event.end ? ' até ' + formatDateTime(event.end) : ''}
@@ -475,18 +694,18 @@ function showEventDetails(event) {
     
     if (props.description) {
         content += `
-            <div class="mb-3">
-                <h6 class="text-muted small mb-1">Descrição</h6>
-                <p class="mb-0">${escapeHtml(props.description)}</p>
+            <div class="event-detail-item">
+                <h6>Descrição</h6>
+                <p>${escapeHtml(props.description)}</p>
             </div>
         `;
     }
     
     if (props.location) {
         content += `
-            <div class="mb-3">
-                <h6 class="text-muted small mb-1">Local</h6>
-                <p class="mb-0">
+            <div class="event-detail-item">
+                <h6>Local</h6>
+                <p>
                     <i class="bi bi-geo-alt me-2"></i>${escapeHtml(props.location)}
                 </p>
             </div>
@@ -496,9 +715,9 @@ function showEventDetails(event) {
     <?php if ($isAdmin): ?>
     if (props.user_name) {
         content += `
-            <div class="mb-3">
-                <h6 class="text-muted small mb-1">Responsável</h6>
-                <p class="mb-0">
+            <div class="event-detail-item">
+                <h6>Responsável</h6>
+                <p>
                     <i class="bi bi-person me-2"></i>${escapeHtml(props.user_name)}
                 </p>
             </div>
