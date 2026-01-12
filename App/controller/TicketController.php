@@ -48,7 +48,7 @@ class TicketController{
         $fileTmp  = $_FILES['attachment']['tmp_name'];
         $fileName = basename($_FILES['attachment']['name']);
         $fileExt  = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        $allowed  = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt'];
+        $allowed  = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'txt', 'xlsx', 'xls'];
 
         if (!in_array($fileExt, $allowed)) {
             $error = 'Tipo de arquivo não permitido.';

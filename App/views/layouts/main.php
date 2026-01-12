@@ -18,6 +18,7 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             padding-top: 56px;
+            background-color: #f8f9fa;
         }
 
         .mobile-topbar {
@@ -142,7 +143,6 @@ $isAdminOrTI = $currentUser && in_array($currentUser['role'], ['admin', 'ti'], t
         }
 
         .main-content {
-            background-color: #f8f9fa;
             min-height: calc(100vh - 56px);
             padding: 1rem;
         }
