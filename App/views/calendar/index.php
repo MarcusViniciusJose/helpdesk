@@ -621,14 +621,18 @@ function openEventModal(date = null) {
     const modal = new bootstrap.Modal(document.getElementById('eventModal'));
     modal.show();
 }
-
 function editEvent(event) {
     document.getElementById('modalTitle').textContent = 'Editar Evento';
     document.getElementById('eventForm').action = '<?= BASE_URL ?>/?url=calendar/update';
     document.getElementById('eventId').value = event.id;
     document.getElementById('eventTitle').value = event.title;
-    document.getElementById('eventStart').value = formatDateTimeLocal(event.start);
-    document.getElementById('eventEnd').value = formatDateTimeLocal(event.end || event.start);
+    
+    const startStr = event.extendedProps.start_date || event.start;
+    const endStr = event.extendedProps.end_date || event.end;
+    
+    document.getElementById('eventStart').value = startStr.replace(' ', 'T').substring(0, 16);
+    document.getElementById('eventEnd').value = endStr.replace(' ', 'T').substring(0, 16);
+    
     document.getElementById('eventAllDay').checked = event.allDay;
     document.getElementById('eventDescription').value = event.extendedProps.description || '';
     document.getElementById('eventLocation').value = event.extendedProps.location || '';
@@ -671,6 +675,9 @@ function showEventDetails(event) {
         'cancelled': '<span class="badge bg-danger">Cancelado</span>'
     };
     
+    const startStr = props.start_date || event.start;
+    const endStr = props.end_date || event.end;
+    
     let content = `
         <div class="event-detail-item">
             <div class="d-flex align-items-center gap-2 mb-2">
@@ -686,8 +693,8 @@ function showEventDetails(event) {
             <h6>Período</h6>
             <p>
                 <i class="bi bi-calendar me-2"></i>
-                ${formatDateTime(event.start)} 
-                ${event.end ? ' até ' + formatDateTime(event.end) : ''}
+                ${formatDateTime(startStr)} 
+                ${endStr ? ' até ' + formatDateTime(endStr) : ''}
             </p>
         </div>
     `;
@@ -810,8 +817,16 @@ function formatDateTime(date) {
 
 function formatDateTimeLocal(date) {
     if (!date) return '';
+    
     const d = new Date(date);
-    return d.toISOString().slice(0, 16);
+    
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function escapeHtml(text) {

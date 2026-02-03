@@ -30,42 +30,55 @@ class CalendarController{
     }
 
     public function getEvents(){
-        header('Content-Type: application/json');
+    header('Content-Type: application/json');
 
-        $user = Auth::user();
-        $viewUserId = $_GET['user_id'] ?? null;
+    $user = Auth::user();
+    $viewUserId = $_GET['user_id'] ?? null;
 
-
-        if($user['role'] == 'admin'){
-            if($viewUserId){
-                $events = $this->eventModel->getByUser($viewUserId);
-            }else{
-                $events = $this->eventModel->getTeamEvents();
-            }
+    if($user['role'] == 'admin'){
+        if($viewUserId){
+            $events = $this->eventModel->getByUser($viewUserId);
         }else{
-            $events = $this->eventModel->getByUser($user['id']);
+            $events = $this->eventModel->getTeamEvents();
         }
-        $formattedEvents = array_map(function($event){
-            return [
-                'id' => $event['id'],
-                'title' => $event['title'],
-                'start' => $event['start_date'],
-                'end' => $event['end_date'],
-                'allDay' => $event['all_day'],
-                'backgroundColor' => $event['color'],
-                'borderColor' => $event['color'],
-                'extendedProps' => [
-                    'description' => $event['description'],
-                    'location' => $event['location'],
-                    'event_type' => $event['event_type'],
-                    'status' => $event['status'],
-                    'user_name' => $event['user_name'],
-                    'user_id' => $event['user_id'],
-                ]
-                ];
-        }, $events);
-        echo json_encode($formattedEvents);
+    }else{
+        $events = $this->eventModel->getByUser($user['id']);
     }
+    
+    $formattedEvents = array_map(function($event){
+        $start = $event['start_date'];
+        $end = $event['end_date'];
+        
+        if (strpos($start, '+') === false && strpos($start, 'Z') === false) {
+            $start = str_replace(' ', 'T', $start);
+        }
+        if (strpos($end, '+') === false && strpos($end, 'Z') === false) {
+            $end = str_replace(' ', 'T', $end);
+        }
+        
+        return [
+            'id' => $event['id'],
+            'title' => $event['title'],
+            'start' => $start,  
+            'end' => $end,      
+            'allDay' => (bool)$event['all_day'],
+            'backgroundColor' => $event['color'],
+            'borderColor' => $event['color'],
+            'extendedProps' => [
+                'description' => $event['description'],
+                'location' => $event['location'],
+                'event_type' => $event['event_type'],
+                'status' => $event['status'],
+                'user_name' => $event['user_name'],
+                'user_id' => $event['user_id'],
+                'start_date' => $event['start_date'],  
+                'end_date' => $event['end_date'],  
+            ]
+        ];
+    }, $events);
+    
+    echo json_encode($formattedEvents);
+}
 
     public function store(){
         if($_SERVER['REQUEST_METHOD'] !== 'POST'){
