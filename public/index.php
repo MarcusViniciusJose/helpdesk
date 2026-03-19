@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+session_name('helpdesk_session');
 session_start();
 
 error_reporting(E_ALL);
